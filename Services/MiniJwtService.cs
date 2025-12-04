@@ -25,17 +25,14 @@ public class MiniJwtService : IMiniJwtService
         var tokenHandler = new JwtSecurityTokenHandler();
         var claims = new List<Claim>();
 
-        // Logique de Réflexion (identique à avant)
         foreach (var prop in typeof(T).GetProperties())
         {
             var attr = prop.GetCustomAttribute<JwtClaimAttribute>();
-            if (attr != null)
+            if (attr == null) continue;
+            var value = prop.GetValue(payload)?.ToString();
+            if (!string.IsNullOrEmpty(value))
             {
-                var value = prop.GetValue(payload)?.ToString();
-                if (!string.IsNullOrEmpty(value))
-                {
-                    claims.Add(new Claim(attr.ClaimType, value));
-                }
+                claims.Add(new Claim(attr.ClaimType, value));
             }
         }
 
@@ -57,7 +54,7 @@ public class MiniJwtService : IMiniJwtService
     public ClaimsPrincipal ValidateToken(string token)
     {
         var tokenHandler = new JwtSecurityTokenHandler();
-        
+
         var parameters = new TokenValidationParameters
         {
             ValidateIssuerSigningKey = true,
@@ -82,19 +79,36 @@ public class MiniJwtService : IMiniJwtService
         foreach (var prop in typeof(T).GetProperties())
         {
             var attr = prop.GetCustomAttribute<JwtClaimAttribute>();
-            if (attr != null)
-            {
-                var claim = principal.Claims.FirstOrDefault(c => c.Type == attr.ClaimType);
-                if (claim != null)
-                {
-                    // Gestion simple des types (à étendre selon besoins)
-                    if (prop.PropertyType == typeof(string))
-                        prop.SetValue(result, claim.Value);
-                    else if (prop.PropertyType == typeof(int) && int.TryParse(claim.Value, out int i))
-                        prop.SetValue(result, i);
-                }
-            }
+            if (attr == null) continue;
+            var claim = principal.Claims.FirstOrDefault(c => c.Type == attr.ClaimType);
+            if (claim == null) continue;
+            trySetProperty(result, prop, claim.Value);
         }
         return result;
+    }
+
+    private void trySetProperty<T>(T obj, PropertyInfo prop, string value)
+    {
+        var targetType = Nullable.GetUnderlyingType(prop.PropertyType) ?? prop.PropertyType;
+        var typeCode = Type.GetTypeCode(targetType);
+        
+        switch (typeCode)
+        {
+            case TypeCode.Empty or TypeCode.Object or TypeCode.DBNull:
+                // types not handled: ne rien faire
+                return;
+            case TypeCode.String:
+                prop.SetValue(obj, value);
+                return;
+            case TypeCode.Char:
+                prop.SetValue(obj, char.Parse(value));
+                return;
+            default:
+            {
+                var converted = Convert.ChangeType(value, targetType);
+                prop.SetValue(obj, converted);
+                break;
+            }
+        }
     }
 }
