@@ -1,5 +1,4 @@
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using MiniJwt.Core.Services;
 
@@ -7,7 +6,6 @@ namespace MiniJwt.Core.Extensions;
 
 public static class MiniJwtExtensions
 {
-    // 1. Nouvelle méthode pour ajouter le service au conteneur DI
     public static IServiceCollection AddMiniJwt(this IServiceCollection services, Action<MiniJwtOptions> configureOptions)
     {
         services.Configure(configureOptions);
@@ -15,7 +13,6 @@ public static class MiniJwtExtensions
         return services;
     }
 
-    // 2. Middleware mis à jour pour utiliser le service injecté
     public static IApplicationBuilder UseMiniJwt(this IApplicationBuilder app)
     {
         return app.Use(async (context, next) =>
