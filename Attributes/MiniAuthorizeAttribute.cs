@@ -1,19 +1,18 @@
 using Microsoft.AspNetCore.Http;
-using System.Security.Claims;
 
 namespace MiniJwt.Core.Attributes;
 
 [AttributeUsage(AttributeTargets.Method | AttributeTargets.Class)]
-public class MiniAuthorizeAttribute : Attribute, IEndpointFilter
+public class MiniAuthorizeAttribute(string? requiredRole) : Attribute, IEndpointFilter
 {
-    public string? RequiredRole { get; set; }
+    private string? RequiredRole { get; } = requiredRole;
 
     public async ValueTask<object?> InvokeAsync(EndpointFilterInvocationContext context, EndpointFilterDelegate next)
     {
         var user = context.HttpContext.User;
 
         // 1. Vérifie si l'utilisateur est authentifié (rempli par le Middleware)
-        if (user?.Identity?.IsAuthenticated != true)
+        if (user.Identity?.IsAuthenticated != true)
         {
             return Results.Unauthorized();
         }
