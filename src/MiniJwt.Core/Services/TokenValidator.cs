@@ -12,6 +12,7 @@ public static class TokenValidator
     public static ClaimsPrincipal GetPrincipal(string token, string secretKey, string issuer, string audience)
     {
         var tokenHandler = new JwtSecurityTokenHandler();
+        tokenHandler.MapInboundClaims = false;
         var key = Encoding.ASCII.GetBytes(secretKey);
 
         var parameters = new TokenValidationParameters

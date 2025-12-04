@@ -28,11 +28,14 @@ public class MiniJwtService : IMiniJwtService
         foreach (var prop in typeof(T).GetProperties())
         {
             var attr = prop.GetCustomAttribute<JwtClaimAttribute>();
+            Console.WriteLine($"DEBUG: Inspecting prop={prop.Name}, attr={(attr==null?"null":attr.ClaimType)}");
             if (attr == null) continue;
             var value = prop.GetValue(payload)?.ToString();
+            Console.WriteLine($"DEBUG: value for {prop.Name} = {value}");
             if (!string.IsNullOrEmpty(value))
             {
                 claims.Add(new Claim(attr.ClaimType, value));
+                Console.WriteLine($"DEBUG: Added claim {attr.ClaimType}={value}");
             }
         }
 
@@ -54,6 +57,7 @@ public class MiniJwtService : IMiniJwtService
     public ClaimsPrincipal ValidateToken(string token)
     {
         var tokenHandler = new JwtSecurityTokenHandler();
+        tokenHandler.MapInboundClaims = false;
 
         var parameters = new TokenValidationParameters
         {
@@ -67,7 +71,13 @@ public class MiniJwtService : IMiniJwtService
             ClockSkew = TimeSpan.Zero
         };
 
-        return tokenHandler.ValidateToken(token, parameters, out _);
+        var principal = tokenHandler.ValidateToken(token, parameters, out _);
+        Console.WriteLine("DEBUG: Claims in principal after validation:");
+        foreach (var c in principal.Claims)
+        {
+            Console.WriteLine($"DEBUG: claim {c.Type} = {c.Value}");
+        }
+        return principal;
     }
 
     public T? ValidateAndDeserialize<T>(string token) where T : new()
