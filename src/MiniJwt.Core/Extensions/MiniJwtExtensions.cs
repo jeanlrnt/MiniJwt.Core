@@ -27,7 +27,8 @@ public static class MiniJwtExtensions
                     var jwtService = context.RequestServices.GetRequiredService<IMiniJwtService>();
                     
                     var principal = jwtService.ValidateToken(token);
-                    context.User = principal;
+                    if (principal is not null) 
+                        context.User = principal;
                 }
                 catch
                 {
