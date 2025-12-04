@@ -19,16 +19,15 @@ public class MiniAuthorizeAttribute : Attribute, IEndpointFilter
         }
 
         // 2. Vérifie le rôle si nécessaire
-        if (!string.IsNullOrEmpty(RequiredRole))
-        {
-            // Note: Le claim de rôle standard est souvent mappé, on vérifie ici simplement
-            var hasRole = user.Claims.Any(c => c.Type == "role" && c.Value == RequiredRole) 
-                       || user.IsInRole(RequiredRole);
+        if (string.IsNullOrEmpty(RequiredRole)) return await next(context);
+        
+        // Note: Le claim de rôle standard est souvent mappé, on vérifie ici simplement
+        var hasRole = user.Claims.Any(c => c.Type == "role" && c.Value == RequiredRole) 
+                      || user.IsInRole(RequiredRole);
 
-            if (!hasRole)
-            {
-                return Results.Forbid();
-            }
+        if (!hasRole)
+        {
+            return Results.Forbid();
         }
 
         return await next(context);
