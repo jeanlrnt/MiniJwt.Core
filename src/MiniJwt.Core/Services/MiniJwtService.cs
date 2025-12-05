@@ -5,6 +5,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Reflection;
 using System.Security.Claims;
 using System.Text;
+using System.Globalization;
 
 namespace MiniJwt.Core.Services;
 
@@ -28,14 +29,20 @@ public class MiniJwtService : IMiniJwtService
         foreach (var prop in typeof(T).GetProperties())
         {
             var attr = prop.GetCustomAttribute<JwtClaimAttribute>();
-            Console.WriteLine($"DEBUG: Inspecting prop={prop.Name}, attr={(attr==null?"null":attr.ClaimType)}");
             if (attr == null) continue;
-            var value = prop.GetValue(payload)?.ToString();
-            Console.WriteLine($"DEBUG: value for {prop.Name} = {value}");
-            if (!string.IsNullOrEmpty(value))
+            var rawValue = prop.GetValue(payload);
+            if (rawValue != null)
             {
-                claims.Add(new Claim(attr.ClaimType, value));
-                Console.WriteLine($"DEBUG: Added claim {attr.ClaimType}={value}");
+                string value;
+                if (rawValue is IFormattable formattable)
+                    value = formattable.ToString(null, CultureInfo.InvariantCulture);
+                else
+                    value = rawValue.ToString()!;
+
+                if (!string.IsNullOrEmpty(value))
+                {
+                    claims.Add(new Claim(attr.ClaimType, value));
+                }
             }
         }
 
@@ -43,7 +50,7 @@ public class MiniJwtService : IMiniJwtService
         
         if (_keyBytes.Length < 32)
         {
-            return null!; // La clé est trop courte pour HS256, on ne peut pas générer de token valide
+            return null!; // La clé trop courte pour HS256, on ne peut pas générer de token valide
         }
 
         var tokenDescriptor = new SecurityTokenDescriptor
@@ -60,23 +67,10 @@ public class MiniJwtService : IMiniJwtService
             var token = tokenHandler.CreateToken(tokenDescriptor);
             return tokenHandler.WriteToken(token);
         }
-        catch (ArgumentException argEx)
+        catch
         {
-            // Si la création échoue (p.ex. dates incohérentes), on retente avec une expiration minimale
-            Console.WriteLine($"DEBUG: GenerateToken failed with ArgumentException: {argEx.Message}. Retrying with minimal expiration.");
-            tokenDescriptor.Expires = DateTime.UtcNow.AddSeconds(1);
-            tokenDescriptor.NotBefore = DateTime.UtcNow.AddSeconds(-10);
-            var token = tokenHandler.CreateToken(tokenDescriptor);
-            return tokenHandler.WriteToken(token);
-        }
-        catch (Exception ex)
-        {
-            // Pour être sûr que GenerateToken ne lève pas en contexte de tests, on capture et retente avec une valeur sûre
-            Console.WriteLine($"DEBUG: GenerateToken failed with Exception: {ex.Message}. Retrying with minimal expiration.");
-            tokenDescriptor.Expires = DateTime.UtcNow.AddSeconds(1);
-            tokenDescriptor.NotBefore = DateTime.UtcNow.AddSeconds(-10);
-            var token = tokenHandler.CreateToken(tokenDescriptor);
-            return tokenHandler.WriteToken(token);
+            // Si la création échoue, retourner null conformément à la stratégie de robustesse
+            return null!;
         }
     }
 
@@ -100,17 +94,11 @@ public class MiniJwtService : IMiniJwtService
         try
         {
             var principal = tokenHandler.ValidateToken(token, parameters, out _);
-            Console.WriteLine("DEBUG: Claims in principal after validation:");
-            foreach (var c in principal.Claims)
-            {
-                Console.WriteLine($"DEBUG: claim {c.Type} = {c.Value}");
-            }
             return principal;
         }
         catch (Exception ex)
         {
             // Ne pas propager d'exception aux appelants : retourner null pour indiquer l'échec de validation
-            Console.WriteLine($"DEBUG: ValidateToken failed: {ex.GetType().Name}: {ex.Message}");
             return null;
         }
     }
@@ -155,8 +143,15 @@ public class MiniJwtService : IMiniJwtService
                 return;
             default:
             {
-                var converted = Convert.ChangeType(value, targetType);
-                prop.SetValue(obj, converted);
+                try
+                {
+                    var converted = Convert.ChangeType(value, targetType, CultureInfo.InvariantCulture);
+                    prop.SetValue(obj, converted);
+                }
+                catch
+                {
+                    // ignore conversion errors
+                }
                 break;
             }
         }

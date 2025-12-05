@@ -2,6 +2,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Reflection;
 using System.Security.Claims;
 using System.Text;
+using System.Globalization;
 using Microsoft.IdentityModel.Tokens;
 using MiniJwt.Core.Attributes;
 
@@ -43,13 +44,44 @@ public static class TokenValidator
                 var claim = principal.Claims.FirstOrDefault(c => c.Type == attr.ClaimType);
                 if (claim != null)
                 {
-                    // Conversion basique (String -> PropType)
-                    // Pour un vrai package, il faudrait gérer int, bool, guid, etc. plus robustement
-                    if (prop.PropertyType == typeof(string))
-                        prop.SetValue(result, claim.Value);
-                    else if (prop.PropertyType == typeof(int))
-                        prop.SetValue(result, int.Parse(claim.Value));
-                     // Ajouter d'autres types au besoin
+                    try
+                    {
+                        var targetType = Nullable.GetUnderlyingType(prop.PropertyType) ?? prop.PropertyType;
+                        if (targetType == typeof(string))
+                        {
+                            prop.SetValue(result, claim.Value);
+                        }
+                        else if (targetType == typeof(int))
+                        {
+                            if (int.TryParse(claim.Value, NumberStyles.Any, CultureInfo.InvariantCulture, out var v))
+                                prop.SetValue(result, v);
+                        }
+                        else if (targetType == typeof(long))
+                        {
+                            if (long.TryParse(claim.Value, NumberStyles.Any, CultureInfo.InvariantCulture, out var v))
+                                prop.SetValue(result, v);
+                        }
+                        else if (targetType == typeof(double))
+                        {
+                            if (double.TryParse(claim.Value, NumberStyles.Any, CultureInfo.InvariantCulture, out var v))
+                                prop.SetValue(result, v);
+                        }
+                        else if (targetType == typeof(bool))
+                        {
+                            if (bool.TryParse(claim.Value, out var v))
+                                prop.SetValue(result, v);
+                        }
+                        else
+                        {
+                            // Attempt a general conversion as fallback
+                            var converted = Convert.ChangeType(claim.Value, targetType, CultureInfo.InvariantCulture);
+                            prop.SetValue(result, converted);
+                        }
+                    }
+                    catch
+                    {
+                        // Ignore conversion errors and continue
+                    }
                 }
             }
         }
