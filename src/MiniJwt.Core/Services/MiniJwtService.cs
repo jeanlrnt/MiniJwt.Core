@@ -40,6 +40,11 @@ public class MiniJwtService : IMiniJwtService
         }
 
         claims.Add(new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()));
+        
+        if (_keyBytes.Length < 32)
+        {
+            return null!; // La clé est trop courte pour HS256, on ne peut pas générer de token valide
+        }
 
         var tokenDescriptor = new SecurityTokenDescriptor
         {
