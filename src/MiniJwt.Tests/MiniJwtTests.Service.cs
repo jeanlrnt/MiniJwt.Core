@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Options;
+﻿using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using MiniJwt.Core.Attributes;
 using MiniJwt.Core.Models;
 using MiniJwt.Core.Services;
@@ -6,9 +7,9 @@ using Xunit;
 
 namespace MiniJwt.Tests;
 
-public partial class MiniJwtTests
+public class MiniJwtTests
 {
-    private static IMiniJwtService CreateService(string secret = "IntegrationTestSecretKey_LongEnough_For_HS256_0123456789", double expMinutes = 60, string issuer = "MiniJwt.Tests", string audience = "MiniJwt.Tests.Client")
+    private IMiniJwtService CreateService(string secret = "IntegrationTestSecretKey_LongEnough_For_HS256_0123456789", double expMinutes = 60, string issuer = "MiniJwt.Tests", string audience = "MiniJwt.Tests.Client")
     {
         var options = Options.Create(new MiniJwtOptions
         {
@@ -18,7 +19,7 @@ public partial class MiniJwtTests
             ExpirationMinutes = expMinutes
         });
 
-        return new MiniJwtService(options);
+        return new MiniJwtService(options, new LoggerFactory().CreateLogger<MiniJwtService>());
     }
 
     private class TestUser
