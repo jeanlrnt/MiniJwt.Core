@@ -26,6 +26,16 @@ public class MiniJwtService : IMiniJwtService
         _keyBytes = Encoding.UTF8.GetBytes(_options.SecretKey);
     }
 
+    /// <summary>
+    /// Generates a JWT token with the given payload.
+    /// </summary>
+    /// <param name="payload">
+    ///  The payload object containing properties decorated with MiniJwtClaimAttribute.
+    /// </param>
+    /// <typeparam name="T">
+    ///  The type of the payload.
+    /// </typeparam>
+    /// <returns></returns>
     public string? GenerateToken<T>(T payload)
     {
         var tokenHandler = new JwtSecurityTokenHandler();
@@ -69,6 +79,15 @@ public class MiniJwtService : IMiniJwtService
         }
     }
 
+    /// <summary>
+    /// Validates the given JWT token and returns the claims principal if valid.
+    /// </summary>
+    /// <param name="token">
+    ///  The JWT token to validate.
+    /// </param>
+    /// <returns>
+    ///  The claims principal if the token is valid; otherwise, null.
+    /// </returns>
     public ClaimsPrincipal? ValidateToken(string token)
     {
         var tokenHandler = new JwtSecurityTokenHandler
@@ -100,6 +119,15 @@ public class MiniJwtService : IMiniJwtService
         }
     }
 
+    /// <summary>
+    /// Validates the given JWT token and deserializes its claims into an object of type T.
+    /// </summary>
+    /// <param name="token">
+    ///  The JWT token to validate and deserialize.
+    /// </param>
+    /// <typeparam name="T">
+    ///  The type to deserialize the claims into. Must have a parameterless constructor.
+    /// </typeparam>
     public T? ValidateAndDeserialize<T>(string token) where T : new()
     {
         var principal = ValidateToken(token);
