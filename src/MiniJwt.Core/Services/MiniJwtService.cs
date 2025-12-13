@@ -31,7 +31,7 @@ public class MiniJwtService : IMiniJwtService
         
         foreach (var prop in typeof(T).GetProperties())
         {
-            var attr = prop.GetCustomAttribute<JwtClaimAttribute>();
+            var attr = prop.GetCustomAttribute<MiniJwtClaimAttribute>();
             if (attr is null) continue;
             var rawValue = prop.GetValue(payload);
             if (rawValue is null) continue;
@@ -110,7 +110,7 @@ public class MiniJwtService : IMiniJwtService
 
         foreach (var prop in typeof(T).GetProperties())
         {
-            var attr = prop.GetCustomAttribute<JwtClaimAttribute>();
+            var attr = prop.GetCustomAttribute<MiniJwtClaimAttribute>();
             if (attr == null) continue;
             var claim = principal.Claims.FirstOrDefault(c => c.Type == attr.ClaimType);
             if (claim == null) continue;

@@ -23,11 +23,11 @@ public partial class MiniJwtTests
 
     private class TestUser
     {
-        [JwtClaim("id")]
+        [MiniJwtClaim("id")]
         public int Id { get; set; }
-        [JwtClaim("email")]
+        [MiniJwtClaim("email")]
         public string? Email { get; set; }
-        [JwtClaim("name")]
+        [MiniJwtClaim("name")]
         public string? Name { get; set; }
     }
 
