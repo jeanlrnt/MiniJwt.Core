@@ -66,7 +66,7 @@ public class MiniJwtTests
     [Fact]
     public void ExpiredToken_ShouldReturnNull_OnValidation()
     {
-        const int expSeconds = 2;
+        const int expSeconds = 2; // Cant generate an expired token directly, so we set a short expiration and wait
         var svc = CreateService(expMinutes: expSeconds / 60.0); // 2 seconds
         var user = new TestUser { Id = 1, Email = "test@test.com", Name = "User Test" };
         var token = svc.GenerateToken(user);
