@@ -44,7 +44,7 @@ public partial class MiniJwtTests
                 {
                     endpoints.MapGet("/who", async context =>
                     {
-                        var id = context.User.FindFirst("sub")?.Value ?? "-";
+                        var id = context.User.FindFirst("Id")?.Value ?? "-";
                         await context.Response.WriteAsync(id);
                     });
                 });

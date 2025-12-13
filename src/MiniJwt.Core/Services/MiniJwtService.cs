@@ -33,7 +33,7 @@ public class MiniJwtService : IMiniJwtService
             if (attr is null) continue;
             var rawValue = prop.GetValue(payload);
             if (rawValue is null) continue;
-            TrySetProperty(rawValue, prop, attr.ClaimType);
+            claims.Add(new Claim(attr.ClaimType, rawValue.ToString() ?? string.Empty));
         }
 
         claims.Add(new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()));
