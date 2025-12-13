@@ -8,9 +8,6 @@ on:
 jobs:
   publish:
     runs-on: windows-latest
-    strategy:
-      matrix:
-        dotnet-version: [ 8.0.x ]
     
     steps:
       - name: Checkout code
@@ -19,7 +16,7 @@ jobs:
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: ${{ matrix.dotnet-version }}
+          dotnet-version: '8.0.x'
 
       - name: Restore dependencies
         run: dotnet restore
