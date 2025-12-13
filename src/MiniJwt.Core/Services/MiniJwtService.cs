@@ -21,7 +21,7 @@ public class MiniJwtService : IMiniJwtService
     {
         _logger = logger;
         _options = options.Value;
-        _keyBytes = Encoding.ASCII.GetBytes(_options.SecretKey);
+        _keyBytes = Encoding.UTF8.GetBytes(_options.SecretKey);
     }
 
     public string? GenerateToken<T>(T payload)
