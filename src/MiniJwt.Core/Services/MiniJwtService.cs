@@ -17,6 +17,8 @@ public class MiniJwtService : IMiniJwtService
     private readonly MiniJwtOptions _options;
     private readonly byte[] _keyBytes;
 
+    private const int MinimumKeyLengthBytes = 32; // 256 bits for HS256
+
     public MiniJwtService(IOptions<MiniJwtOptions> options, ILogger<MiniJwtService> logger)
     {
         _logger = logger;
@@ -40,7 +42,7 @@ public class MiniJwtService : IMiniJwtService
 
         claims.Add(new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()));
         
-        if (_keyBytes.Length < 32)
+        if (_keyBytes.Length < MinimumKeyLengthBytes)
         {
             _logger.LogWarning("Secret key too short for HS256. It must be at least 32 bytes.");
             return null;
