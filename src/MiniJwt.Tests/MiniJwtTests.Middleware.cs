@@ -1,29 +1,18 @@
-﻿using System;
-using System.Net.Http.Headers;
+﻿using System.Net.Http.Headers;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Options;
-using MiniJwt.Core;
-using MiniJwt.Core.Attributes;
 using MiniJwt.Core.Extensions;
-using MiniJwt.Core.Services;
+using MiniJwt.Core.Models;
 using Xunit;
 
-namespace MiniJwt.Tests.Integration;
+namespace MiniJwt.Tests;
 
-public class MiddlewareTests
+public partial class MiniJwtTests
 {
-    public class User
-    {
-        [JwtClaim("sub")] public int Id { get; set; }
-        [JwtClaim("name")] public string? Name { get; set; }
-    }
-
     [Fact]
     public async Task UseMiniJwt_ShouldAuthenticateRequest_WhenValidTokenProvided()
     {
@@ -55,7 +44,7 @@ public class MiddlewareTests
                 {
                     endpoints.MapGet("/who", async context =>
                     {
-                        var id = context.User?.FindFirst("sub")?.Value ?? "-";
+                        var id = context.User.FindFirst("sub")?.Value ?? "-";
                         await context.Response.WriteAsync(id);
                     });
                 });
@@ -63,13 +52,19 @@ public class MiddlewareTests
 
         using var server = new TestServer(builder);
         var client = server.CreateClient();
+        var svc = CreateService(options.SecretKey, options.ExpirationMinutes, options.Issuer, options.Audience);
 
-        var token = TokenGenerator.GenerateToken(new User { Id = 99, Name = "X" }, options.SecretKey, options.Issuer, options.Audience, TimeSpan.FromMinutes(10));
+        var token = svc.GenerateToken(new TestUser()
+        {
+            Id = 1,
+            Email = "test@test.com",
+            Name = "Test User"
+        });
         client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
 
         var res = await client.GetAsync("/who");
         res.EnsureSuccessStatusCode();
         var body = await res.Content.ReadAsStringAsync();
-        Assert.Equal("99", body);
+        Assert.Equal("1", body);
     }
 }
