@@ -20,7 +20,6 @@ public class MiniJwtService : IMiniJwtService
     public MiniJwtService(IOptions<MiniJwtOptions> options)
     {
         _options = options.Value;
-        // On prépare la clé une seule fois pour optimiser
         _keyBytes = Encoding.ASCII.GetBytes(_options.SecretKey);
     }
 
