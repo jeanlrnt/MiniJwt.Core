@@ -1,0 +1,30 @@
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.5.2.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MiniJwt.Core", "src\MiniJwt.Core\MiniJwt.Core.csproj", "{2501BD7E-1B1F-4F38-8F19-7E3536C695E6}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MiniJwt.Tests", "src\MiniJwt.Tests\MiniJwt.Tests.csproj", "{CF946414-91F3-4EDA-B026-BE1804AA316C}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{2501BD7E-1B1F-4F38-8F19-7E3536C695E6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2501BD7E-1B1F-4F38-8F19-7E3536C695E6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2501BD7E-1B1F-4F38-8F19-7E3536C695E6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2501BD7E-1B1F-4F38-8F19-7E3536C695E6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CF946414-91F3-4EDA-B026-BE1804AA316C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CF946414-91F3-4EDA-B026-BE1804AA316C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CF946414-91F3-4EDA-B026-BE1804AA316C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CF946414-91F3-4EDA-B026-BE1804AA316C}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {ADDBE85F-973F-4C15-8261-DA4309B27AB5}
+	EndGlobalSection
+EndGlobal
