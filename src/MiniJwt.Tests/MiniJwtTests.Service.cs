@@ -8,7 +8,7 @@ namespace MiniJwt.Tests;
 
 public partial class MiniJwtTests
 {
-    private static MiniJwtService CreateService(string secret = "IntegrationTestSecretKey_LongEnough_For_HS256_0123456789", double expMinutes = 60, string issuer = "MiniJwt.Tests", string audience = "MiniJwt.Tests.Client")
+    private static IMiniJwtService CreateService(string secret = "IntegrationTestSecretKey_LongEnough_For_HS256_0123456789", double expMinutes = 60, string issuer = "MiniJwt.Tests", string audience = "MiniJwt.Tests.Client")
     {
         var options = Options.Create(new MiniJwtOptions
         {
