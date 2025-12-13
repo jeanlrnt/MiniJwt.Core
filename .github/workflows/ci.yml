@@ -31,11 +31,14 @@ jobs:
       - name: Test
         run: |
           dotnet test src/MiniJwt.Tests/MiniJwt.Tests.csproj -c Release --no-build --logger "trx;LogFileName=test_results.trx"
+          
+      - name: List Test Results
+        run: dir src/MiniJwt.Tests/TestResults
 
       - name: Upload test results
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: test-results-${{ matrix.os }}
-          path: src/MiniJwt.Tests/TestResults || test_results.trx || **/TestResults/*.trx
+          path: src/MiniJwt.Tests/TestResults/*.trx
 
