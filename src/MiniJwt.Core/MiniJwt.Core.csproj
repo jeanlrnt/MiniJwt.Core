@@ -2,13 +2,15 @@
 
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <PackageId>MiniJwt.Core</PackageId>
+    <Version>1.0.0</Version>
+    <Authors>jeanlrnt</Authors>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-    <Version>1.0.0</Version>
-    <Authors>VotreNom</Authors>
-    <Description>Un générateur et validateur JWT ultra-léger avec support Middleware et Attributs.</Description>
+    <Description>Un générateur et validateur JWT ultra-léger avec attributs.</Description>
     <PackageTags>jwt;auth;security;minimal-api</PackageTags>
-    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <RepositoryUrl>https://github.com/jeanlrnt/MiniJwt.Core</RepositoryUrl>
   </PropertyGroup>
 
   <ItemGroup>
