@@ -6,12 +6,14 @@ using System.Reflection;
 using System.Security.Claims;
 using System.Text;
 using System.Globalization;
+using Microsoft.Extensions.Logging;
 using MiniJwt.Core.Models;
 
 namespace MiniJwt.Core.Services;
 
 public class MiniJwtService : IMiniJwtService
 {
+    private readonly ILogger _logger = new Logger<MiniJwtService>(new LoggerFactory());
     private readonly MiniJwtOptions _options;
     private readonly byte[] _keyBytes;
 
@@ -40,7 +42,8 @@ public class MiniJwtService : IMiniJwtService
         
         if (_keyBytes.Length < 32)
         {
-            return null; // La clé trop courte pour HS256, on ne peut pas générer de token valide
+            _logger.LogWarning("Secret key too short for HS256. It must be at least 32 bytes.");
+            return null;
         }
 
         var tokenDescriptor = new SecurityTokenDescriptor
@@ -59,7 +62,8 @@ public class MiniJwtService : IMiniJwtService
         }
         catch
         {
-            return null; // En cas d'erreur lors de la création du token, on retourne null
+            _logger.LogWarning("Error generating JWT token.");
+            return null;
         }
     }
 
@@ -87,9 +91,10 @@ public class MiniJwtService : IMiniJwtService
             var principal = tokenHandler.ValidateToken(token, parameters, out _);
             return principal;
         }
-        catch (Exception)
+        catch (Exception exception)
         {
-            return null; // En cas d'erreur de validation, on retourne null
+            _logger.LogWarning(exception, "JWT token validation failed.");
+            return null;
         }
     }
 
@@ -122,7 +127,7 @@ public class MiniJwtService : IMiniJwtService
         switch (typeCode)
         {
             case TypeCode.Empty or TypeCode.Object or TypeCode.DBNull:
-                // types not handled: ne rien faire
+                // types not handled: skip
                 return;
             case TypeCode.String:
                 prop.SetValue(obj, value);
@@ -139,7 +144,7 @@ public class MiniJwtService : IMiniJwtService
                 }
                 catch
                 {
-                    // En cas d'erreur de conversion, on ignore et ne set pas la propriété
+                    _logger.LogWarning("Failed to convert claim value '{Value}' to type {Type} for property {Property}. Skipping assignment.", value, targetType.Name, prop.Name);
                 }
                 break;
             }
