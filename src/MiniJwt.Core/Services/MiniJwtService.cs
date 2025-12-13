@@ -60,9 +60,9 @@ public class MiniJwtService : IMiniJwtService
             var token = tokenHandler.CreateToken(tokenDescriptor);
             return tokenHandler.WriteToken(token);
         }
-        catch
+        catch (Exception exception)
         {
-            _logger.LogWarning("Error generating JWT token.");
+            _logger.LogWarning(exception, "Error generating JWT token.");
             return null;
         }
     }
@@ -127,7 +127,6 @@ public class MiniJwtService : IMiniJwtService
         switch (typeCode)
         {
             case TypeCode.Empty or TypeCode.Object or TypeCode.DBNull:
-                // types not handled: skip
                 return;
             case TypeCode.String:
                 prop.SetValue(obj, value);
@@ -142,9 +141,9 @@ public class MiniJwtService : IMiniJwtService
                     var converted = Convert.ChangeType(value, targetType, CultureInfo.InvariantCulture);
                     prop.SetValue(obj, converted);
                 }
-                catch
+                catch (Exception exception)
                 {
-                    _logger.LogWarning("Failed to convert claim value '{Value}' to type {Type} for property {Property}. Skipping assignment.", value, targetType.Name, prop.Name);
+                    _logger.LogWarning(exception, "Failed to convert claim value '{Value}' to type {Type} for property {Property}. Skipping assignment.", value, targetType.Name, prop.Name);
                 }
                 break;
             }
