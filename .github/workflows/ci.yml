@@ -31,9 +31,6 @@ jobs:
       - name: Test
         run: |
           dotnet test src/MiniJwt.Tests/MiniJwt.Tests.csproj -c Release --no-build --logger "trx;LogFileName=test_results.trx"
-          
-      - name: List Test Results
-        run: dir src/MiniJwt.Tests/TestResults
 
       - name: Upload test results
         if: always()
