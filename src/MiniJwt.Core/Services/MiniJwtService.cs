@@ -162,7 +162,14 @@ public class MiniJwtService : IMiniJwtService
                 prop.SetValue(obj, value);
                 return;
             case TypeCode.Char:
-                prop.SetValue(obj, char.Parse(value));
+                try
+                {
+                    prop.SetValue(obj, char.Parse(value));
+                }
+                catch (Exception exception)
+                {
+                    _logger.LogWarning(exception, "Failed to convert claim value '{Value}' to type {Type} for property {Property}. Skipping assignment.", value, targetType.Name, prop.Name);
+                }
                 return;
             default:
             {
