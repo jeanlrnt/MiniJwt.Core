@@ -6,6 +6,7 @@ using System.Reflection;
 using System.Security.Claims;
 using System.Text;
 using System.Globalization;
+using MiniJwt.Core.Models;
 
 namespace MiniJwt.Core.Services;
 
@@ -21,36 +22,25 @@ public class MiniJwtService : IMiniJwtService
         _keyBytes = Encoding.ASCII.GetBytes(_options.SecretKey);
     }
 
-    public string GenerateToken<T>(T payload)
+    public string? GenerateToken<T>(T payload)
     {
         var tokenHandler = new JwtSecurityTokenHandler();
         var claims = new List<Claim>();
-
+        
         foreach (var prop in typeof(T).GetProperties())
         {
             var attr = prop.GetCustomAttribute<JwtClaimAttribute>();
-            if (attr == null) continue;
+            if (attr is null) continue;
             var rawValue = prop.GetValue(payload);
-            if (rawValue != null)
-            {
-                string value;
-                if (rawValue is IFormattable formattable)
-                    value = formattable.ToString(null, CultureInfo.InvariantCulture);
-                else
-                    value = rawValue.ToString()!;
-
-                if (!string.IsNullOrEmpty(value))
-                {
-                    claims.Add(new Claim(attr.ClaimType, value));
-                }
-            }
+            if (rawValue is null) continue;
+            TrySetProperty(rawValue, prop, attr.ClaimType);
         }
 
         claims.Add(new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()));
         
         if (_keyBytes.Length < 32)
         {
-            return null!; // La clé trop courte pour HS256, on ne peut pas générer de token valide
+            return null; // La clé trop courte pour HS256, on ne peut pas générer de token valide
         }
 
         var tokenDescriptor = new SecurityTokenDescriptor
@@ -69,15 +59,16 @@ public class MiniJwtService : IMiniJwtService
         }
         catch
         {
-            // Si la création échoue, retourner null conformément à la stratégie de robustesse
-            return null!;
+            return null; // En cas d'erreur lors de la création du token, on retourne null
         }
     }
 
     public ClaimsPrincipal? ValidateToken(string token)
     {
-        var tokenHandler = new JwtSecurityTokenHandler();
-        tokenHandler.MapInboundClaims = false;
+        var tokenHandler = new JwtSecurityTokenHandler
+        {
+            MapInboundClaims = false
+        };
 
         var parameters = new TokenValidationParameters
         {
@@ -96,16 +87,14 @@ public class MiniJwtService : IMiniJwtService
             var principal = tokenHandler.ValidateToken(token, parameters, out _);
             return principal;
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            // Ne pas propager d'exception aux appelants : retourner null pour indiquer l'échec de validation
-            return null;
+            return null; // En cas d'erreur de validation, on retourne null
         }
     }
 
     public T? ValidateAndDeserialize<T>(string token) where T : new()
     {
-        // On réutilise la méthode ValidateToken interne
         var principal = ValidateToken(token);
         if (principal == null)
         {
@@ -120,12 +109,12 @@ public class MiniJwtService : IMiniJwtService
             if (attr == null) continue;
             var claim = principal.Claims.FirstOrDefault(c => c.Type == attr.ClaimType);
             if (claim == null) continue;
-            trySetProperty(result, prop, claim.Value);
+            TrySetProperty(result, prop, claim.Value);
         }
         return result;
     }
 
-    private void trySetProperty<T>(T obj, PropertyInfo prop, string value)
+    private void TrySetProperty<T>(T obj, PropertyInfo prop, string value)
     {
         var targetType = Nullable.GetUnderlyingType(prop.PropertyType) ?? prop.PropertyType;
         var typeCode = Type.GetTypeCode(targetType);
@@ -150,7 +139,7 @@ public class MiniJwtService : IMiniJwtService
                 }
                 catch
                 {
-                    // ignore conversion errors
+                    // En cas d'erreur de conversion, on ignore et ne set pas la propriété
                 }
                 break;
             }

@@ -1,4 +1,4 @@
-namespace MiniJwt.Core;
+namespace MiniJwt.Core.Models;
 
 public class MiniJwtOptions
 {
