@@ -13,12 +13,13 @@ namespace MiniJwt.Core.Services;
 
 public class MiniJwtService : IMiniJwtService
 {
-    private readonly ILogger _logger = new Logger<MiniJwtService>(new LoggerFactory());
+    private readonly ILogger _logger;
     private readonly MiniJwtOptions _options;
     private readonly byte[] _keyBytes;
 
-    public MiniJwtService(IOptions<MiniJwtOptions> options)
+    public MiniJwtService(IOptions<MiniJwtOptions> options, ILogger<MiniJwtService> logger)
     {
+        _logger = logger;
         _options = options.Value;
         _keyBytes = Encoding.ASCII.GetBytes(_options.SecretKey);
     }
