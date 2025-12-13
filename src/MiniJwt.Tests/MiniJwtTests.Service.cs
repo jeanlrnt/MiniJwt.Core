@@ -19,7 +19,8 @@ public class MiniJwtTests
             ExpirationMinutes = expMinutes
         });
 
-        return new MiniJwtService(options, new LoggerFactory().CreateLogger<MiniJwtService>());
+        using var loggerFactory = new LoggerFactory();
+        return new MiniJwtService(options, loggerFactory.CreateLogger<MiniJwtService>());
     }
 
     private class TestUser
