@@ -2,7 +2,9 @@ name: Publish to NuGet
 
 on:
   push:
-    tags: 
+    branches:
+      - develop
+    tags:
       - 'v*.*.*'
 
 jobs:
@@ -26,6 +28,9 @@ jobs:
 
       - name: Pack the project
         run: dotnet pack --configuration Release --no-build --output ./nupkg
+
+      - name: List packed files
+        run: dir ./nupkg
 
       - name: Publish to NuGet
         env:
