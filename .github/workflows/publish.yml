@@ -32,6 +32,7 @@ jobs:
           NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
         shell: pwsh
         run: |
+          $ErrorActionPreference = 'Stop'
           Get-ChildItem -Path ./nupkg -Filter '*.nupkg' | ForEach-Object {
             dotnet nuget push $_.FullName --api-key $env:NUGET_API_KEY --source 'https://api.nuget.org/v3/index.json' --skip-duplicate
           }
