@@ -27,9 +27,6 @@ jobs:
       - name: Pack the project
         run: dotnet pack --configuration Release --no-build --output ./nupkg
 
-      - name: List packed files
-        run: dir ./nupkg
-
       - name: Publish to NuGet
         env:
           NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
