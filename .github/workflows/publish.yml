@@ -2,7 +2,7 @@ name: Publish to NuGet
 
 on:
   push:
-    tags: 
+    tags:
       - 'v*.*.*'
 
 jobs:
@@ -30,4 +30,9 @@ jobs:
       - name: Publish to NuGet
         env:
           NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
-        run: dotnet nuget push ./nupkg/* --api-key $NUGET_API_KEY -s https://api.nuget.org/v3/index.json --skip-duplicate
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          Get-ChildItem -Path ./nupkg -Filter '*.nupkg' | ForEach-Object {
+            dotnet nuget push $_.FullName --api-key $env:NUGET_API_KEY --source 'https://api.nuget.org/v3/index.json' --skip-duplicate
+          }
