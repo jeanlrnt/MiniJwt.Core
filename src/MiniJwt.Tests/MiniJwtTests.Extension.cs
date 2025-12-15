@@ -1,13 +1,23 @@
-﻿using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
-using MiniJwt.Core.Attributes;
-using MiniJwt.Core.Models;
-using MiniJwt.Core.Services;
+﻿using Microsoft.Extensions.DependencyInjection;
+using MiniJwt.Core.Extensions;
 using Xunit;
 
 namespace MiniJwt.Tests;
 
 public partial class MiniJwtTests
 {
-    
+    [Fact]
+    public void Test_ServiceCollectionExtensions_AddMiniJwt()
+    {
+        var services = new ServiceCollection();
+        services.AddMiniJwt(options =>
+        {
+            options.SecretKey = "TestSecretKey";
+        });
+
+        var serviceProvider = services.BuildServiceProvider();
+        var miniJwtService = serviceProvider.GetService<Core.Services.IMiniJwtService>();
+
+        Assert.NotNull(miniJwtService);
+    }
 }
