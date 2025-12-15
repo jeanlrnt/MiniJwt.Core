@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Linq;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using MiniJwt.Core.Extensions;
 using Xunit;
 
@@ -79,6 +81,35 @@ public partial class MiniJwtTests
         Assert.Equal("TestIssuer", options.Value.Issuer);
         Assert.Equal("TestAudience", options.Value.Audience);
         Assert.Equal(120, options.Value.ExpirationMinutes);
+    }
+    
+    [Fact]
+    public void Test_ServiceCollectionExtensions_AddMiniJwt_MiniJwtOptionsUsed()
+    {
+        var services = new ServiceCollection();
+        services.AddMiniJwt(options =>
+        {
+            options.SecretKey = "your-very-secure-secret-key-here";
+            options.Issuer = "TestIssuer";
+            options.Audience = "TestAudience";
+            options.ExpirationMinutes = 120;
+        });
+        var serviceProvider = services.BuildServiceProvider();
+        var miniJwtService = serviceProvider.GetService<Core.Services.IMiniJwtService>();
+        Assert.NotNull(miniJwtService);
+
+        var token = miniJwtService.GenerateToken(new { });
+        Assert.NotNull(token);
+        
+        var principal = miniJwtService.ValidateToken(token);
+        Assert.NotNull(principal);
+        
+        var claims = principal.Claims.ToList();
+        Assert.Contains(claims, c => c is { Type: "iss", Value: "TestIssuer" });
+        Assert.Contains(claims, c => c is { Type: "aud", Value: "TestAudience" });
+        Assert.Contains(principal.Claims, c => c.Type == "exp"); // Expiration
+        Assert.Contains(principal.Claims, c => c.Type == "iat"); // Issued At
+        Assert.True(long.Parse(principal.Claims.First(c => c.Type == "exp").Value) - long.Parse(principal.Claims.First(c => c.Type == "iat").Value) <= 120 * 60);
     }
     
     [Fact]
