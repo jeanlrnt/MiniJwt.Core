@@ -31,5 +31,6 @@ public partial class MiniJwtTests
     {
         var services = new ServiceCollection();
         Assert.Throws<ArgumentNullException>(() => services.AddMiniJwt(null!));
+        Assert.Throws<ArgumentNullException>(() => ServiceCollectionExtensions.AddMiniJwt(services, null!));
     }
 }
