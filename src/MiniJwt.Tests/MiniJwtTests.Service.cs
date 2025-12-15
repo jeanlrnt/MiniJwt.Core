@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using System;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using MiniJwt.Core.Attributes;
 using MiniJwt.Core.Models;
@@ -9,9 +10,23 @@ namespace MiniJwt.Tests;
 
 public partial class MiniJwtTests
 {
+    private class SimpleOptionsMonitor<T>(T value) : IOptionsMonitor<T>
+    {
+        public T CurrentValue => value;
+        public T Get(string? name) => value;
+        public IDisposable OnChange(Action<T, string> listener) => NullDisposable.Instance;
+    }
+
+    private class NullDisposable : IDisposable
+    {
+        public static readonly NullDisposable Instance = new NullDisposable();
+        private NullDisposable() { }
+        public void Dispose() { }
+    }
+    
     private IMiniJwtService CreateService(string secret = "IntegrationTestSecretKey_LongEnough_For_HS256_0123456789", double expMinutes = 60, string issuer = "MiniJwt.Tests", string audience = "MiniJwt.Tests.Client")
     {
-        var options = Options.Create(new MiniJwtOptions
+        var options = new SimpleOptionsMonitor<MiniJwtOptions>(new MiniJwtOptions
         {
             SecretKey = secret,
             Issuer = issuer,
@@ -20,7 +35,7 @@ public partial class MiniJwtTests
         });
 
         using var loggerFactory = new LoggerFactory();
-        return new MiniJwtService(options, loggerFactory.CreateLogger<MiniJwtService>());
+        return new MiniJwtService(options, loggerFactory.CreateLogger<MiniJwtService>(), new System.IdentityModel.Tokens.Jwt.JwtSecurityTokenHandler());
     }
 
     private class TestUser
