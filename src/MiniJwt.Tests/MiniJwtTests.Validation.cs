@@ -165,4 +165,24 @@ public partial class MiniJwtTests
             await host.StartAsync();
         });
     }
+    
+    [Fact]
+    public async Task ValidateOnStart_WithEmptyIssuerAndAudience_ShouldStartSuccessfully()
+    {
+        var builder = Host.CreateDefaultBuilder()
+            .ConfigureServices((_, services) =>
+            {
+                services.AddMiniJwt(opts =>
+                {
+                    opts.SecretKey = ValidSecretKey;
+                    opts.Issuer = string.Empty;
+                    opts.Audience = string.Empty;
+                });
+            });
+
+        
+        using var host = builder.Build();
+        await host.StartAsync();
+        await host.StopAsync();
+    }
 }
