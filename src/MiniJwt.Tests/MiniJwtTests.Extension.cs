@@ -120,7 +120,10 @@ public partial class MiniJwtTests
         Assert.Contains(claims, c => c is { Type: "aud", Value: "TestAudience" });
         Assert.Contains(principal.Claims, c => c.Type == "exp"); // Expiration
         Assert.Contains(principal.Claims, c => c.Type == "nbf"); // Not Before
-        Assert.True(long.Parse(principal.Claims.First(c => c.Type == "exp").Value) - long.Parse(principal.Claims.First(c => c.Type == "nbf").Value) <= 120 * 60);
+        var expiration = long.Parse(principal.Claims.First(c => c.Type == "exp").Value);
+        var notBefore = long.Parse(principal.Claims.First(c => c.Type == "nbf").Value);
+        var difference = expiration - notBefore;
+        Assert.True(difference <= 120 * 60);
     }
     
     [Fact]
