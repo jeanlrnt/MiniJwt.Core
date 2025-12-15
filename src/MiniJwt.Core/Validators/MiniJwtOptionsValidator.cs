@@ -21,17 +21,8 @@ namespace MiniJwt.Core.Validators
             if (options.ExpirationMinutes <= 0)
                 return ValidateOptionsResult.Fail("ExpirationMinutes must be greater than zero.");
 
-            if (string.IsNullOrWhiteSpace(options.Issuer))
-                return ValidateOptionsResult.Fail("Issuer is required.");
-
-            if (string.IsNullOrWhiteSpace(options.Audience))
-                return ValidateOptionsResult.Fail("Audience is required.");
-            
-            if (options.Issuer == options.Audience)
+            if (options.Issuer == options.Audience && (options.Issuer is not null and not "" || options.Audience is not null and not ""))
                 return ValidateOptionsResult.Fail("Issuer and Audience must be different.");
-            
-            if (options.ExpirationMinutes <= 0)
-                return ValidateOptionsResult.Fail("ExpirationMinutes must be greater than zero.");
 
             return ValidateOptionsResult.Success;
         }
