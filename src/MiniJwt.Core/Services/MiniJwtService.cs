@@ -166,6 +166,7 @@ public class MiniJwtService : IMiniJwtService, IDisposable
                         identity.RemoveClaim(claim);
                         identity.AddClaim(newClaim);
                     }
+                }
             }
             return principal;
         }
