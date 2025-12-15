@@ -9,6 +9,7 @@ public static class ServiceCollectionExtensions
 {
     public static IServiceCollection AddMiniJwt(this IServiceCollection services, Action<MiniJwtOptions> configure)
     {
+        services.AddLogging();
         services.Configure(configure);
         services.AddSingleton<IMiniJwtService, MiniJwtService>();
 
