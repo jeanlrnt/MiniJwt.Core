@@ -7,7 +7,7 @@ using Xunit;
 
 namespace MiniJwt.Tests;
 
-public class MiniJwtTests
+public partial class MiniJwtTests
 {
     private IMiniJwtService CreateService(string secret = "IntegrationTestSecretKey_LongEnough_For_HS256_0123456789", double expMinutes = 60, string issuer = "MiniJwt.Tests", string audience = "MiniJwt.Tests.Client")
     {
