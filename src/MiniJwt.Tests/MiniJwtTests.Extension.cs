@@ -68,8 +68,8 @@ public partial class MiniJwtTests
         var serviceProvider = services.BuildServiceProvider();
         var options = serviceProvider.GetService<IOptions<MiniJwtOptions>>();
         Assert.NotNull(options);
-        Assert.Equal(SuperSecretKey, options.Value.Issuer);
-        Assert.Equal(string.Empty, options.Value.SecretKey);
+        Assert.Equal(SuperSecretKey, options.Value.SecretKey);
+        Assert.Equal(string.Empty, options.Value.Issuer);
         Assert.Equal(string.Empty, options.Value.Audience);
         Assert.Equal(60, options.Value.ExpirationMinutes);
     }
