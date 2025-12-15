@@ -14,6 +14,8 @@ public partial class MiniJwtTests
     {
         public T CurrentValue => value;
         public T Get(string? name) => value;
+        // Intentionally returns a no-op disposable for testing purposes.
+        // This test implementation does not track option changes.
         public IDisposable OnChange(Action<T, string> listener) => NullDisposable.Instance;
     }
 
