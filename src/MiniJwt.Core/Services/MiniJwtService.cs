@@ -54,7 +54,7 @@ public class MiniJwtService : IMiniJwtService, IDisposable
     {
         if (opts is null) throw new ArgumentNullException(nameof(opts));
 
-        var keyBytes = Encoding.UTF8.GetBytes(opts.SecretKey ?? string.Empty);
+        var keyBytes = Encoding.UTF8.GetBytes(opts.SecretKey);
 
         if (keyBytes.Length < MinimumKeyLengthBytes)
         {
