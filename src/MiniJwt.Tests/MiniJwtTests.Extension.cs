@@ -45,8 +45,8 @@ public partial class MiniJwtTests
         Assert.NotNull(miniJwtService);
         var options = serviceProvider.GetService<Microsoft.Extensions.Options.IOptions<Core.Models.MiniJwtOptions>>();
         Assert.NotNull(options);
-        Assert.NotEqual("FirstSecretKey", options!.Value.SecretKey);
-        Assert.Equal("SecondSecretKey", options!.Value.SecretKey);
+        Assert.NotEqual("FirstSecretKey", options.Value.SecretKey);
+        Assert.Equal("SecondSecretKey", options.Value.SecretKey);
     }
 
     [Fact]
