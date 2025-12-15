@@ -235,6 +235,6 @@ public class MiniJwtService : IMiniJwtService, IDisposable
 
     public void Dispose()
     {
-        _optionsChangeRegistration.Dispose();
+        _optionsChangeRegistration?.Dispose();
     }
 }
