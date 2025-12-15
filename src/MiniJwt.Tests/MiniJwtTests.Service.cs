@@ -25,6 +25,31 @@ public partial class MiniJwtTests
         private NullDisposable() { }
         public void Dispose() { }
     }
+
+    private class TrackableDisposable : IDisposable
+    {
+        public bool IsDisposed { get; private set; }
+        public void Dispose()
+        {
+            IsDisposed = true;
+        }
+    }
+
+    private class TrackableOptionsMonitor<T> : IOptionsMonitor<T>
+    {
+        private readonly T _value;
+        private readonly TrackableDisposable _disposable;
+
+        public TrackableOptionsMonitor(T value, TrackableDisposable disposable)
+        {
+            _value = value;
+            _disposable = disposable;
+        }
+
+        public T CurrentValue => _value;
+        public T Get(string? name) => _value;
+        public IDisposable OnChange(Action<T, string> listener) => _disposable;
+    }
     
     private IMiniJwtService CreateService(string secret = "IntegrationTestSecretKey_LongEnough_For_HS256_0123456789", double expMinutes = 60, string issuer = "MiniJwt.Tests", string audience = "MiniJwt.Tests.Client")
     {
@@ -118,5 +143,35 @@ public partial class MiniJwtTests
 
         var principal = b.ValidateToken(token);
         Assert.Null(principal);
+    }
+
+    [Fact]
+    public void Dispose_ShouldCleanupOptionsChangeSubscription()
+    {
+        // Arrange
+        var trackableDisposable = new TrackableDisposable();
+        var options = new TrackableOptionsMonitor<MiniJwtOptions>(
+            new MiniJwtOptions
+            {
+                SecretKey = "IntegrationTestSecretKey_LongEnough_For_HS256_0123456789",
+                Issuer = "MiniJwt.Tests",
+                Audience = "MiniJwt.Tests.Client",
+                ExpirationMinutes = 60
+            },
+            trackableDisposable
+        );
+
+        using var loggerFactory = new LoggerFactory();
+        var service = new MiniJwtService(
+            options, 
+            loggerFactory.CreateLogger<MiniJwtService>(), 
+            new System.IdentityModel.Tokens.Jwt.JwtSecurityTokenHandler()
+        );
+
+        // Act
+        service.Dispose();
+
+        // Assert
+        Assert.True(trackableDisposable.IsDisposed, "The options change subscription should be disposed when the service is disposed");
     }
 }
