@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Options;
+﻿using System.Text.RegularExpressions;
+using Microsoft.Extensions.Options;
 using MiniJwt.Core.Models;
 
 namespace MiniJwt.Core.Validators
@@ -20,8 +21,14 @@ namespace MiniJwt.Core.Validators
 
             if (options.ExpirationMinutes <= 0)
                 return ValidateOptionsResult.Fail("ExpirationMinutes must be greater than zero.");
+            
+            if (Regex.IsMatch(options.Issuer, @"^\s+$"))
+                return ValidateOptionsResult.Fail("Issuer cannot be whitespace only.");
+            
+            if (Regex.IsMatch(options.Audience, @"^\s+$"))
+                return ValidateOptionsResult.Fail("Audience cannot be whitespace only.");
 
-            if (options.Issuer == options.Audience && (options.Issuer is not null and not "" || options.Audience is not null and not ""))
+            if (options.Issuer == options.Audience)
                 return ValidateOptionsResult.Fail("Issuer and Audience must be different.");
 
             return ValidateOptionsResult.Success;
