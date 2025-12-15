@@ -1,4 +1,5 @@
-﻿ using Microsoft.Extensions.DependencyInjection;
+﻿using System.IdentityModel.Tokens.Jwt;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using MiniJwt.Core.Models;
 using MiniJwt.Core.Services;
@@ -21,6 +22,7 @@ public static class ServiceCollectionExtensions
 
         services.AddLogging();
         services.Configure(configure);
+        services.AddSingleton(new JwtSecurityTokenHandler { MapInboundClaims = false });
         services.AddSingleton<IMiniJwtService, MiniJwtService>();
 
         return services;
