@@ -66,4 +66,24 @@ public partial class MiniJwtTests
             await host.StartAsync();
         });
     }
+    
+    [Fact]
+    public async Task ValidateOnStart_WithInvalidExpiration_ShouldThrowOptionsValidationException()
+    {
+        var builder = Host.CreateDefaultBuilder()
+            .ConfigureServices((_, services) =>
+            {
+                services.AddMiniJwt(opts =>
+                {
+                    opts.SecretKey = ValidSecretKey;
+                    opts.ExpirationMinutes = 0;
+                });
+            });
+
+        await Assert.ThrowsAsync<OptionsValidationException>(async () =>
+        {
+            using var host = builder.Build();
+            await host.StartAsync();
+        });
+    }
 }
