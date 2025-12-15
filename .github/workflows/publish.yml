@@ -12,6 +12,9 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: true
 
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
@@ -23,6 +26,47 @@ jobs:
 
       - name: Build the project
         run: dotnet build --configuration Release --no-restore
+
+      - name: Sync csproj version with tag and commit if different
+        shell: pwsh
+        env:
+          TAG_REF: ${{ github.ref }}
+          BRANCH_NAME: main
+        run: |
+          $ErrorActionPreference = 'Stop'
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          
+          $tagFull = $env:TAG_REF -replace '^refs/tags/',''
+          $tagVersion = $tagFull -replace '^v',''
+          Write-Host "Tag version: $tagVersion"
+          
+          $csproj = 'src/MiniJwt.Core/MiniJwt.Core.csproj'
+          if (-not (Test-Path $csproj)) {
+            Write-Host "File not found: $csproj"
+            exit 1
+          }
+          
+          $content = Get-Content $csproj -Raw
+          if ($content -match '<Version>\s*(.+?)\s*</Version>') {
+            $currentVersion = $matches[1].Trim()
+            Write-Host "Current csproj version: $currentVersion"
+          } else {
+            Write-Host "No <Version> element found in $csproj"
+            exit 1
+          }
+          
+          if ($currentVersion -ne $tagVersion) {
+            Write-Host "Versions differ — updating csproj to $tagVersion"
+            $newContent = $content -replace '<Version>\s*.+?\s*</Version>', "<Version>$tagVersion</Version>"
+            Set-Content -Path $csproj -Value $newContent -Encoding utf8
+          
+            git add $csproj
+            git commit -m "ci: sync version to tag $tagVersion [skip ci]"
+            git push origin HEAD:refs/heads/$env:BRANCH_NAME
+          } else {
+            Write-Host "Versions match — no commit needed"
+          }
 
       - name: Pack the project
         run: dotnet pack --configuration Release --no-build --output ./nupkg
