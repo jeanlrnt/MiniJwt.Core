@@ -33,4 +33,19 @@ public partial class MiniJwtTests
         Assert.Throws<ArgumentNullException>(() => services.AddMiniJwt(null!));
         Assert.Throws<ArgumentNullException>(() => ServiceCollectionExtensions.AddMiniJwt(services, null!));
     }
+
+    [Fact]
+    public void Test_ServiceCollectionExtensions_AddMiniJwt_MultipleCalls()
+    {
+        var services = new ServiceCollection();
+        services.AddMiniJwt(options => { options.SecretKey = "FirstSecretKey"; });
+        services.AddMiniJwt(options => { options.SecretKey = "SecondSecretKey"; });
+        var serviceProvider = services.BuildServiceProvider();
+        var miniJwtService = serviceProvider.GetService<Core.Services.IMiniJwtService>();
+        Assert.NotNull(miniJwtService);
+        var options = serviceProvider.GetService<Microsoft.Extensions.Options.IOptions<Core.Models.MiniJwtOptions>>();
+        Assert.NotNull(options);
+        Assert.NotEqual("FirstSecretKey", options!.Value.SecretKey);
+        Assert.Equal("SecondSecretKey", options!.Value.SecretKey);
+    }
 }
