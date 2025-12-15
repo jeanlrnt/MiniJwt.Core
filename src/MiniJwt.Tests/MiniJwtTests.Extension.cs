@@ -11,7 +11,7 @@ namespace MiniJwt.Tests;
 public partial class MiniJwtTests
 {
     [Fact]
-    public void Test_ServiceCollectionExtensions_AddMiniJwt()
+    public void ServiceCollectionExtensions_AddMiniJwt()
     {
         var services = new ServiceCollection();
         services.AddMiniJwt(options =>
@@ -27,7 +27,7 @@ public partial class MiniJwtTests
     }
 
     [Fact]
-    public void Test_ServiceCollectionExtensions_AddMiniJwt_NullConfigure_ThrowsException()
+    public void ServiceCollectionExtensions_AddMiniJwt_NullConfigure_ThrowsException()
     {
         var services = new ServiceCollection();
         Assert.Throws<ArgumentNullException>(() => services.AddMiniJwt(null!));
@@ -35,7 +35,7 @@ public partial class MiniJwtTests
     }
 
     [Fact]
-    public void Test_ServiceCollectionExtensions_AddMiniJwt_MultipleCalls()
+    public void ServiceCollectionExtensions_AddMiniJwt_MultipleCalls()
     {
         var services = new ServiceCollection();
         services.AddMiniJwt(options => { options.SecretKey = "FirstSecretKey"; });
@@ -50,7 +50,7 @@ public partial class MiniJwtTests
     }
 
     [Fact]
-    public void Test_ServiceCollectionExtensions_AddMiniJwt_DefaultOptions()
+    public void ServiceCollectionExtensions_AddMiniJwt_DefaultOptions()
     {
         var services = new ServiceCollection();
         services.AddMiniJwt(_ => { });
@@ -64,7 +64,7 @@ public partial class MiniJwtTests
     }
 
     [Fact]
-    public void Test_ServiceCollectionExtensions_AddMiniJwt_OptionsConfiguration()
+    public void ServiceCollectionExtensions_AddMiniJwt_OptionsConfiguration()
     {
         var services = new ServiceCollection();
         services.AddMiniJwt(options =>
@@ -84,7 +84,7 @@ public partial class MiniJwtTests
     }
     
     [Fact]
-    public void Test_ServiceCollectionExtensions_AddMiniJwt_MiniJwtOptionsUsed()
+    public void ServiceCollectionExtensions_AddMiniJwt_MiniJwtOptionsUsed()
     {
         var services = new ServiceCollection();
         services.AddMiniJwt(options =>
@@ -113,7 +113,7 @@ public partial class MiniJwtTests
     }
     
     [Fact]
-    public void Test_ServiceCollectionExtensions_AddMiniJwt_LoggingServiceRegistered()
+    public void ServiceCollectionExtensions_AddMiniJwt_LoggingServiceRegistered()
     {
         var services = new ServiceCollection();
         services.AddMiniJwt(options => { options.SecretKey = "LoggingTestSecretKey"; });
