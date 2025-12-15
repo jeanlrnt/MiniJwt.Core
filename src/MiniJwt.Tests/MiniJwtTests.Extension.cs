@@ -4,20 +4,27 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using MiniJwt.Core.Extensions;
+using MiniJwt.Core.Models;
 using Xunit;
 
 namespace MiniJwt.Tests;
 
 public partial class MiniJwtTests
 {
+    private const string SuperSecretKey = "your-very-secure-secret-key-here";
+    private Action<MiniJwtOptions> BasicOptions => options =>
+    {
+        options.SecretKey = SuperSecretKey;
+        options.Issuer = "TestIssuer";
+        options.Audience = "TestAudience";
+        options.ExpirationMinutes = 60;
+    };
+    
     [Fact]
     public void ServiceCollectionExtensions_AddMiniJwt()
     {
         var services = new ServiceCollection();
-        services.AddMiniJwt(options =>
-        {
-            options.SecretKey = "TestSecretKey";
-        });
+        services.AddMiniJwt(BasicOptions);
 
         var serviceProvider = services.BuildServiceProvider();
         var miniJwtService = serviceProvider.GetService<Core.Services.IMiniJwtService>();
@@ -38,27 +45,30 @@ public partial class MiniJwtTests
     public void ServiceCollectionExtensions_AddMiniJwt_MultipleCalls()
     {
         var services = new ServiceCollection();
-        services.AddMiniJwt(options => { options.SecretKey = "FirstSecretKey"; });
-        services.AddMiniJwt(options => { options.SecretKey = "SecondSecretKey"; });
+        services.AddMiniJwt(options => { options.SecretKey = $"First{SuperSecretKey}"; });
+        services.AddMiniJwt(options => { options.SecretKey = $"Second{SuperSecretKey}"; });
         var serviceProvider = services.BuildServiceProvider();
         var miniJwtService = serviceProvider.GetService<Core.Services.IMiniJwtService>();
         Assert.NotNull(miniJwtService);
         var options = serviceProvider.GetService<IOptions<Core.Models.MiniJwtOptions>>();
         Assert.NotNull(options);
-        Assert.NotEqual("FirstSecretKey", options.Value.SecretKey);
-        Assert.Equal("SecondSecretKey", options.Value.SecretKey);
+        Assert.NotEqual($"First{SuperSecretKey}", options.Value.SecretKey);
+        Assert.Equal($"Second{SuperSecretKey}", options.Value.SecretKey);
     }
 
     [Fact]
     public void ServiceCollectionExtensions_AddMiniJwt_DefaultOptions()
     {
         var services = new ServiceCollection();
-        services.AddMiniJwt(_ => { });
+        services.AddMiniJwt(options =>
+        {
+            options.SecretKey = SuperSecretKey;
+        });
         var serviceProvider = services.BuildServiceProvider();
         var options = serviceProvider.GetService<IOptions<Core.Models.MiniJwtOptions>>();
         Assert.NotNull(options);
+        Assert.Equal(SuperSecretKey, options.Value.Issuer);
         Assert.Equal(string.Empty, options.Value.SecretKey);
-        Assert.Equal(string.Empty, options.Value.Issuer);
         Assert.Equal(string.Empty, options.Value.Audience);
         Assert.Equal(60, options.Value.ExpirationMinutes);
     }
@@ -69,7 +79,7 @@ public partial class MiniJwtTests
         var services = new ServiceCollection();
         services.AddMiniJwt(options =>
         {
-            options.SecretKey = "ConfiguredSecretKey";
+            options.SecretKey = SuperSecretKey;
             options.Issuer = "TestIssuer";
             options.Audience = "TestAudience";
             options.ExpirationMinutes = 120;
@@ -77,7 +87,7 @@ public partial class MiniJwtTests
         var serviceProvider = services.BuildServiceProvider();
         var options = serviceProvider.GetService<IOptions<Core.Models.MiniJwtOptions>>();
         Assert.NotNull(options);
-        Assert.Equal("ConfiguredSecretKey", options.Value.SecretKey);
+        Assert.Equal(SuperSecretKey, options.Value.SecretKey);
         Assert.Equal("TestIssuer", options.Value.Issuer);
         Assert.Equal("TestAudience", options.Value.Audience);
         Assert.Equal(120, options.Value.ExpirationMinutes);
@@ -89,7 +99,7 @@ public partial class MiniJwtTests
         var services = new ServiceCollection();
         services.AddMiniJwt(options =>
         {
-            options.SecretKey = "your-very-secure-secret-key-here";
+            options.SecretKey = SuperSecretKey;
             options.Issuer = "TestIssuer";
             options.Audience = "TestAudience";
             options.ExpirationMinutes = 120;
@@ -116,7 +126,7 @@ public partial class MiniJwtTests
     public void ServiceCollectionExtensions_AddMiniJwt_LoggingServiceRegistered()
     {
         var services = new ServiceCollection();
-        services.AddMiniJwt(options => { options.SecretKey = "LoggingTestSecretKey"; });
+        services.AddMiniJwt(options => { options.SecretKey = SuperSecretKey; });
         var serviceProvider = services.BuildServiceProvider();
         var logger = serviceProvider.GetService<ILogger<Core.Services.MiniJwtService>>();
         Assert.NotNull(logger);
