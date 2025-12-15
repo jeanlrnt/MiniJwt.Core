@@ -48,4 +48,18 @@ public partial class MiniJwtTests
         Assert.NotEqual("FirstSecretKey", options!.Value.SecretKey);
         Assert.Equal("SecondSecretKey", options!.Value.SecretKey);
     }
+
+    [Fact]
+    public void Test_ServiceCollectionExtensions_AddMiniJwt_DefaultOptions()
+    {
+        var services = new ServiceCollection();
+        services.AddMiniJwt(_ => { });
+        var serviceProvider = services.BuildServiceProvider();
+        var options = serviceProvider.GetService<Microsoft.Extensions.Options.IOptions<Core.Models.MiniJwtOptions>>();
+        Assert.NotNull(options);
+        Assert.Equal(string.Empty, options.Value.SecretKey);
+        Assert.Equal(string.Empty, options.Value.Issuer);
+        Assert.Equal(string.Empty, options.Value.Audience);
+        Assert.Equal(60, options.Value.ExpirationMinutes);
+    }
 }
