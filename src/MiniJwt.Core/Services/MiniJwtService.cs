@@ -157,13 +157,15 @@ public class MiniJwtService : IMiniJwtService, IDisposable
                 var claims = identity.Claims.ToList();
                 foreach (var claim in claims)
                 {
+                    // Some claims may have additional properties set (e.g., when deserialized from certain token sources or libraries).
+                    // In such cases, we replace the claim with a new one using the first property value as the claim type and the original claim value.
+                    // This normalization ensures that claims are accessible by their expected type in downstream code, avoiding issues with non-standard claim representations.
                     if (claim.Properties.Any())
                     {
                         var newClaim = new Claim(claim.Properties.First().Value, claim.Value);
                         identity.RemoveClaim(claim);
                         identity.AddClaim(newClaim);
                     }
-                }
             }
             return principal;
         }
