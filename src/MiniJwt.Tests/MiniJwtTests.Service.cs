@@ -225,13 +225,9 @@ public partial class MiniJwtTests
         {
             if (claim.Properties.Any())
             {
-                var propertyValue = claim.Properties.First().Value;
-                if (!string.IsNullOrEmpty(propertyValue))
-                {
-                    var newClaim = new System.Security.Claims.Claim(propertyValue, claim.Value);
-                    identity.RemoveClaim(claim);
-                    identity.AddClaim(newClaim);
-                }
+                var newClaim = new System.Security.Claims.Claim(claim.Properties.First().Value, claim.Value);
+                identity.RemoveClaim(claim);
+                identity.AddClaim(newClaim);
             }
         }
         
