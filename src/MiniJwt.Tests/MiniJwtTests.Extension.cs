@@ -119,8 +119,8 @@ public partial class MiniJwtTests
         Assert.Contains(claims, c => c is { Type: "iss", Value: "TestIssuer" });
         Assert.Contains(claims, c => c is { Type: "aud", Value: "TestAudience" });
         Assert.Contains(principal.Claims, c => c.Type == "exp"); // Expiration
-        Assert.Contains(principal.Claims, c => c.Type == "iat"); // Issued At
-        Assert.True(long.Parse(principal.Claims.First(c => c.Type == "exp").Value) - long.Parse(principal.Claims.First(c => c.Type == "iat").Value) <= 120 * 60);
+        Assert.Contains(principal.Claims, c => c.Type == "nbf"); // Not Before
+        Assert.True(long.Parse(principal.Claims.First(c => c.Type == "exp").Value) - long.Parse(principal.Claims.First(c => c.Type == "nbf").Value) <= 120 * 60);
     }
     
     [Fact]
