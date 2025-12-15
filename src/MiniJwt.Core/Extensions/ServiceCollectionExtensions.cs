@@ -21,7 +21,6 @@ public static class ServiceCollectionExtensions
         builder.ValidateOnStart();
 
         services.AddLogging();
-        services.Configure(configure);
         services.AddSingleton(new JwtSecurityTokenHandler { MapInboundClaims = false });
         services.AddSingleton<IMiniJwtService, MiniJwtService>();
 
