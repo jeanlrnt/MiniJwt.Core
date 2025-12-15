@@ -209,14 +209,11 @@ public partial class MiniJwtTests
         
         // Apply the same normalization logic that ValidateToken uses
         var claims = identity.Claims.ToList();
-        foreach (var claim in claims)
+        foreach (var claim in claims.Where(c => c.Properties.Any()))
         {
-            if (claim.Properties.Any())
-            {
-                var newClaim = new System.Security.Claims.Claim(claim.Properties.First().Value, claim.Value);
-                identity.RemoveClaim(claim);
-                identity.AddClaim(newClaim);
-            }
+            var newClaim = new System.Security.Claims.Claim(claim.Properties.First().Value, claim.Value);
+            identity.RemoveClaim(claim);
+            identity.AddClaim(newClaim);
         }
         
         // Verify that the claim with properties was normalized
