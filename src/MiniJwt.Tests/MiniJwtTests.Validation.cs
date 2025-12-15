@@ -29,6 +29,22 @@ public partial class MiniJwtTests
             await host.StartAsync();
         });
     }
+    
+    [Fact]
+    public async Task ValidateOnStart_WithMissingOptions_ShouldThrowOptionsValidationException()
+    {
+        var builder = Host.CreateDefaultBuilder()
+            .ConfigureServices((_, services) =>
+            {
+                services.AddMiniJwt(_ => { });
+            });
+
+        await Assert.ThrowsAsync<OptionsValidationException>(async () =>
+        {
+            using var host = builder.Build();
+            await host.StartAsync();
+        });
+    }
 
     [Fact]
     public async Task ValidateOnStart_WithValidOptions_StartsSuccessfully()
