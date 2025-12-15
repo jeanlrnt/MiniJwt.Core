@@ -20,6 +20,10 @@ public partial class MiniJwtTests
         var miniJwtService = serviceProvider.GetService<Core.Services.IMiniJwtService>();
 
         Assert.NotNull(miniJwtService);
+        Assert.IsType<Core.Services.MiniJwtService>(miniJwtService);
+        Assert.NotNull(serviceProvider.GetService<Microsoft.Extensions.Logging.ILogger<Core.Services.MiniJwtService>>());
+        Assert.NotNull(serviceProvider.GetService<Microsoft.Extensions.Options.IOptions<Core.Models.MiniJwtOptions>>());
+        Assert.Equal("TestSecretKey", serviceProvider.GetService<Microsoft.Extensions.Options.IOptions<Core.Models.MiniJwtOptions>>()!.Value.SecretKey);
     }
 
     [Fact]
