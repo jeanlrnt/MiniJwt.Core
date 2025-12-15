@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using System;
+using Microsoft.Extensions.DependencyInjection;
 using MiniJwt.Core.Extensions;
 using Xunit;
 
@@ -19,5 +20,12 @@ public partial class MiniJwtTests
         var miniJwtService = serviceProvider.GetService<Core.Services.IMiniJwtService>();
 
         Assert.NotNull(miniJwtService);
+    }
+
+    [Fact]
+    public void Test_ServiceCollectionExtensions_AddMiniJwt_NullConfigure_ThrowsException()
+    {
+        var services = new ServiceCollection();
+        Assert.Throws<ArgumentNullException>(() => services.AddMiniJwt(null!));
     }
 }
