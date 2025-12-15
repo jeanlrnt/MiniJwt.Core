@@ -28,7 +28,8 @@ namespace MiniJwt.Core.Validators
             if (Regex.IsMatch(options.Audience, @"^\s+$"))
                 return ValidateOptionsResult.Fail("Audience cannot be whitespace only.");
 
-            if (options.Issuer == options.Audience && !string.IsNullOrEmpty(options.Issuer) || !string.IsNullOrEmpty(options.Audience))
+            if (options.Issuer == options.Audience &&
+                (!string.IsNullOrEmpty(options.Issuer) || !string.IsNullOrEmpty(options.Audience)))
                 return ValidateOptionsResult.Fail("Issuer and Audience must be different.");
 
             return ValidateOptionsResult.Success;
