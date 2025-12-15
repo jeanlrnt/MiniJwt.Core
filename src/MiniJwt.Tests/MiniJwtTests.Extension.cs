@@ -79,4 +79,24 @@ public partial class MiniJwtTests
         // Ensure that the logger is functional
         logger.LogInformation("Logger is working in MiniJwtService test.");
     }
+
+    [Fact]
+    public void Test_ServiceCollectionExtensions_AddMiniJwt_OptionsConfiguration()
+    {
+        var services = new ServiceCollection();
+        services.AddMiniJwt(options =>
+        {
+            options.SecretKey = "ConfiguredSecretKey";
+            options.Issuer = "TestIssuer";
+            options.Audience = "TestAudience";
+            options.ExpirationMinutes = 120;
+        });
+        var serviceProvider = services.BuildServiceProvider();
+        var options = serviceProvider.GetService<Microsoft.Extensions.Options.IOptions<Core.Models.MiniJwtOptions>>();
+        Assert.NotNull(options);
+        Assert.Equal("ConfiguredSecretKey", options.Value.SecretKey);
+        Assert.Equal("TestIssuer", options.Value.Issuer);
+        Assert.Equal("TestAudience", options.Value.Audience);
+        Assert.Equal(120, options.Value.ExpirationMinutes);
+    }
 }
