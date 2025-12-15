@@ -63,22 +63,6 @@ public partial class MiniJwtTests
         Assert.Equal(string.Empty, options.Value.Audience);
         Assert.Equal(60, options.Value.ExpirationMinutes);
     }
-    
-    [Fact]
-    public void Test_ServiceCollectionExtensions_AddMiniJwt_LoggingServiceRegistered()
-    {
-        var services = new ServiceCollection();
-        services.AddMiniJwt(options => { options.SecretKey = "LoggingTestSecretKey"; });
-        var serviceProvider = services.BuildServiceProvider();
-        var logger = serviceProvider.GetService<ILogger<Core.Services.MiniJwtService>>();
-        Assert.NotNull(logger);
-        
-        var miniJwtService = serviceProvider.GetService<Core.Services.IMiniJwtService>();
-        Assert.NotNull(miniJwtService);
-        
-        // Ensure that the logger is functional
-        logger.LogInformation("Logger is working in MiniJwtService test.");
-    }
 
     [Fact]
     public void Test_ServiceCollectionExtensions_AddMiniJwt_OptionsConfiguration()
@@ -98,5 +82,21 @@ public partial class MiniJwtTests
         Assert.Equal("TestIssuer", options.Value.Issuer);
         Assert.Equal("TestAudience", options.Value.Audience);
         Assert.Equal(120, options.Value.ExpirationMinutes);
+    }
+    
+    [Fact]
+    public void Test_ServiceCollectionExtensions_AddMiniJwt_LoggingServiceRegistered()
+    {
+        var services = new ServiceCollection();
+        services.AddMiniJwt(options => { options.SecretKey = "LoggingTestSecretKey"; });
+        var serviceProvider = services.BuildServiceProvider();
+        var logger = serviceProvider.GetService<ILogger<Core.Services.MiniJwtService>>();
+        Assert.NotNull(logger);
+        
+        var miniJwtService = serviceProvider.GetService<Core.Services.IMiniJwtService>();
+        Assert.NotNull(miniJwtService);
+        
+        // Ensure that the logger is functional
+        logger.LogInformation("Logger is working in MiniJwtService test.");
     }
 }
