@@ -8,7 +8,27 @@ namespace MiniJwt.Tests;
 
 public partial class MiniJwtTests
 {
+    private const string TooShortKey = "too-short-key";
     private const string ValidSecretKey = "your-very-secure-secret-key-here-32charsmin!";
+    
+    [Fact]
+    public async Task ValidateOnStart_WithInvalidKeySize_ShouldThrowOptionsValidationException()
+    {
+        var builder = Host.CreateDefaultBuilder()
+            .ConfigureServices((_, services) =>
+            {
+                services.AddMiniJwt(opts =>
+                {
+                    opts.SecretKey = TooShortKey;
+                });
+            });
+
+        await Assert.ThrowsAsync<OptionsValidationException>(async () =>
+        {
+            using var host = builder.Build();
+            await host.StartAsync();
+        });
+    }
 
     [Fact]
     public async Task ValidateOnStart_WithValidOptions_StartsSuccessfully()
