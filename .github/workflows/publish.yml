@@ -26,9 +26,9 @@ jobs:
           $tag = "${{ github.ref_name }}"
           $version = $tag.TrimStart('v')
           Write-Host "Tag version: $version"
-          $csprojPath = Get-ChildItem -Path . -Filter *.csproj -Recurse | Select-Object -First 1
+          $csprojPath = Get-ChildItem -Path . -Filter 'MiniJwt.Core.csproj' -Recurse | Select-Object -First 1
           if (-not $csprojPath) {
-            Write-Error "No .csproj file found."
+            Write-Error "No MiniJwt.Core.csproj file found."
             exit 1
           }
           [xml]$csproj = Get-Content $csprojPath.FullName
