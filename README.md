@@ -1,7 +1,5 @@
 ﻿# MiniJwt.Core
 
-<!-- Badges: filled with your repo values (auto-detected from git remote) -->
-
 <!-- Continuous Integration (main test/build workflow) -->
 [![CI](https://img.shields.io/github/actions/workflow/status/jeanlrnt/MiniJwt.Core/ci.yml?label=CI&style=flat-square&logo=github)](https://github.com/jeanlrnt/MiniJwt.Core/actions)
 [![Publish](https://img.shields.io/github/actions/workflow/status/jeanlrnt/MiniJwt.Core/publish.yml?label=publish&style=flat-square&logo=github)](https://github.com/jeanlrnt/MiniJwt.Core/actions/workflows/nuget-publish.yml)
@@ -184,4 +182,4 @@ If you encounter issues, open an issue on the GitHub repository with:
 
 ---
 
-This README can be adapted if you want examples for a console app, authentication middleware, or a NuGet publish CI workflow.
+Made with ❤️ by [jeanlrnt](https://github.com/jeanlrnt)
