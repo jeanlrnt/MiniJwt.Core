@@ -11,6 +11,7 @@
     <Description>A JWT ultra-lightweight generator and validator with attributes.</Description>
     <PackageTags>jwt;auth;security;minimal-api</PackageTags>
     <RepositoryUrl>https://github.com/jeanlrnt/MiniJwt.Core</RepositoryUrl>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
   </PropertyGroup>
 
   <ItemGroup>
@@ -21,4 +22,7 @@
     <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="7.3.1" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Include="..\..\README.md" Pack="true" PackagePath="\"/>
+  </ItemGroup>
 </Project>
