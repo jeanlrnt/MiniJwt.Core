@@ -1,7 +1,7 @@
 namespace MiniJwt.Core.Attributes;
 
 [AttributeUsage(AttributeTargets.Property)]
-public class MiniJwtClaimAttribute(string claimType) : Attribute
+public class MiniJwtClaimAttribute : Attribute
 {
     /// <summary>
     /// Gets the type of the claim associated with the property.
@@ -15,5 +15,10 @@ public class MiniJwtClaimAttribute(string claimType) : Attribute
     /// }
     /// </code>
     /// </example>
-    public string ClaimType { get; } = claimType;
+    public string ClaimType { get; }
+    
+    public MiniJwtClaimAttribute(string claimType)
+    {
+        ClaimType = claimType;
+    }
 }
