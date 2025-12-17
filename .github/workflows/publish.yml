@@ -22,6 +22,7 @@ jobs:
         run: dotnet restore
 
       - name: Verify project version
+        shell: pwsh
         run: |
           $tag = "${{ github.ref_name }}"
           $version = $tag.TrimStart('v')
