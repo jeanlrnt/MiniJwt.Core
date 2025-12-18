@@ -1,4 +1,4 @@
-﻿# MiniJwt.Core
+# MiniJwt.Core
 
 <!-- Continuous Integration (main test/build workflow) -->
 [![CI](https://img.shields.io/github/actions/workflow/status/jeanlrnt/MiniJwt.Core/ci.yml?label=CI&style=flat-square&logo=github)](https://github.com/jeanlrnt/MiniJwt.Core/actions)
@@ -20,10 +20,10 @@ MiniJwt.Core is a lightweight, minimal JWT library for .NET that provides a simp
 
 ## Documentation
 
-📚 **[Getting Started Guide](docs/getting-started.md)** - Installation and quick start  
-⚙️ **[Configuration Guide](docs/configuration.md)** - Detailed configuration options  
-💡 **[Examples](docs/examples.md)** - Code examples and integration patterns  
-❓ **[FAQ](docs/faq.md)** - Common questions and security best practices
+**[Getting Started Guide](docs/getting-started.md)** - Installation and quick start  
+**[Configuration Guide](docs/configuration.md)** - Detailed configuration options  
+**[Examples](docs/examples.md)** - Code examples and integration patterns  
+**[FAQ](docs/faq.md)** - Common questions and security best practices
 
 ## Sample Applications
 
