@@ -213,10 +213,12 @@ protected override async Task ExecuteAsync(CancellationToken stoppingToken)
 ### Running as Windows Service
 
 ```bash
-dotnet publish -c Release -r win-x64
-sc create "MyWorkerService" binPath="C:\path\to\WorkerService.exe"
+dotnet publish -c Release -r win-x64 --self-contained
+sc create "MyWorkerService" binPath="C:\path\to\publish\WorkerService.exe"
 sc start "MyWorkerService"
 ```
+
+Note: The executable will be in the publish output directory and will match the project name.
 
 ### Running as Linux Systemd Service
 
@@ -248,11 +250,13 @@ sudo systemctl status myworker
 ### Docker Container
 
 ```dockerfile
-FROM mcr.microsoft.com/dotnet/runtime:8.0
+FROM mcr.microsoft.com/dotnet/runtime:8.0.0
 WORKDIR /app
 COPY publish/ .
 ENTRYPOINT ["dotnet", "WorkerService.dll"]
 ```
+
+For the latest patch version, you can also use `8.0` which will automatically resolve to the latest 8.0.x version.
 
 ## Monitoring and Health Checks
 
