@@ -1,0 +1,55 @@
+@ASPNetCoreAuth_HostAddress = http://localhost:5030
+
+# Get API information
+GET {{ASPNetCoreAuth_HostAddress}}/
+Accept: application/json
+
+###
+
+# Login to get a JWT token
+POST {{ASPNetCoreAuth_HostAddress}}/auth/login
+Content-Type: application/json
+
+{
+  "username": "testuser",
+  "password": "password"
+}
+
+###
+
+# Get current user info (requires authentication)
+# First, run the login request above and copy the token
+GET {{ASPNetCoreAuth_HostAddress}}/auth/me
+Authorization: Bearer YOUR_TOKEN_HERE
+
+###
+
+# Access public data (no authentication required)
+GET {{ASPNetCoreAuth_HostAddress}}/data/public
+Accept: application/json
+
+###
+
+# Access protected data (requires authentication)
+GET {{ASPNetCoreAuth_HostAddress}}/data/protected
+Authorization: Bearer YOUR_TOKEN_HERE
+
+###
+
+# Access admin-only data (requires admin role)
+# Login as admin first
+POST {{ASPNetCoreAuth_HostAddress}}/auth/login
+Content-Type: application/json
+
+{
+  "username": "admin",
+  "password": "password"
+}
+
+###
+
+# Then access admin endpoint with admin token
+GET {{ASPNetCoreAuth_HostAddress}}/data/admin
+Authorization: Bearer YOUR_ADMIN_TOKEN_HERE
+
+###

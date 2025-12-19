@@ -1,4 +1,4 @@
-﻿# MiniJwt.Core
+# MiniJwt.Core
 
 <!-- Continuous Integration (main test/build workflow) -->
 [![CI](https://img.shields.io/github/actions/workflow/status/jeanlrnt/MiniJwt.Core/ci.yml?label=CI&style=flat-square&logo=github)](https://github.com/jeanlrnt/MiniJwt.Core/actions)
@@ -16,9 +16,22 @@
 [![License](https://img.shields.io/github/license/jeanlrnt/MiniJwt.Core?style=flat-square)](https://github.com/jeanlrnt/MiniJwt.Core/blob/main/LICENSE)
 [![Last commit](https://img.shields.io/github/last-commit/jeanlrnt/MiniJwt.Core?style=flat-square)](https://github.com/jeanlrnt/MiniJwt.Core/commits)
 
-MiniJwt.Core is a small library for generating and validating JWTs using attributes on object properties to define claims.
+MiniJwt.Core is a lightweight, minimal JWT library for .NET that provides a simple and efficient way to generate and validate JWT tokens using attributes on object properties to define claims. It's designed to be dependency-injection friendly, multi-target framework compatible, and easy to integrate.
 
-This README shows how to install the package, register it in the DI of a .NET application, and provides usage examples (generation, validation and deserialization). It also contains tips for unit tests and debugging.
+## Documentation
+
+**[Getting Started Guide](docs/getting-started.md)** - Installation and quick start  
+**[Configuration Guide](docs/configuration.md)** - Detailed configuration options  
+**[Examples](docs/examples.md)** - Code examples and integration patterns  
+**[FAQ](docs/faq.md)** - Common questions and security best practices
+
+## Sample Applications
+
+The repository includes three runnable sample applications demonstrating different integration scenarios:
+
+- **[ConsoleMinimal](samples/ConsoleMinimal/)** - Basic console app for token generation and validation
+- **[ASPNetCoreAuth](samples/ASPNetCoreAuth/)** - Full ASP.NET Core web API with JWT authentication
+- **[WorkerService](samples/WorkerService/)** - Background service example with periodic token generation
 
 ## Requirements
 
@@ -172,13 +185,31 @@ A: You can use `/p:PackageVersion=1.2.3` with `dotnet pack` or pack from a proje
 **Q: Why does `ValidateAndDeserialize<T>` require `T` to have a parameterless constructor?**
 A: The service creates an instance of `T` using the parameterless constructor and then assigns properties from the claims.
 
+## Contributing
+
+Contributions are welcome! Please:
+- Follow the existing code style
+- Add tests for new features
+- Update documentation as needed
+- Keep the library minimal and focused
+
+See the [examples documentation](docs/examples.md) for development guidelines.
+
 ## Support
 
-If you encounter issues, open an issue on the GitHub repository with:
+If you encounter issues:
 
-- the .NET version used
-- a minimal reproduction
-- logs/stacktraces
+1. Check the [FAQ](docs/faq.md)
+2. Review the [sample applications](samples/)
+3. Search [existing issues](https://github.com/jeanlrnt/MiniJwt.Core/issues)
+4. Open a new issue with:
+   - .NET version used
+   - Minimal reproduction code
+   - Logs/stacktraces
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ---
 
