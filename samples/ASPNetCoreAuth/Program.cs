@@ -72,7 +72,7 @@ app.MapPost("/auth/login", (LoginRequest request, IMiniJwtService jwtService) =>
     return Results.Ok(new LoginResponse
     {
         Token = token,
-        ExpiresIn = 3600,
+        ExpiresIn = (int)(options.ExpirationMinutes * 60),
         Username = payload.Username,
         Role = payload.Role
     });
@@ -180,3 +180,4 @@ public class UserPayload
     [MiniJwtClaim("role")]
     public string Role { get; set; } = string.Empty;
 }
+
