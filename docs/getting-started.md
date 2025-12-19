@@ -178,8 +178,8 @@ var options = new MiniJwtOptions
     ExpirationMinutes = 60
 };
 
-// Simple IOptionsMonitor wrapper for console usage
-var optionsMonitor = Microsoft.Extensions.Options.Options.Create(options).ToMonitor();
+// Create IOptionsMonitor for console usage
+var optionsMonitor = Microsoft.Extensions.Options.Options.CreateMonitor(options);
 
 var tokenHandler = new JwtSecurityTokenHandler { MapInboundClaims = false };
 var jwtService = new MiniJwtService(

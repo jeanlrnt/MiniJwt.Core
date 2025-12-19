@@ -187,8 +187,9 @@ public class AuthController : ControllerBase
 
     private bool ValidateCredentials(string username, string password)
     {
-        // Implement your credential validation logic
-        return true;
+        // WARNING: This is a placeholder. Implement real credential validation (e.g., check a user store, hash comparison, etc.).
+        // For safety, the default implementation always rejects the credentials.
+        return false;
     }
 }
 
