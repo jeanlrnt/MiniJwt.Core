@@ -29,7 +29,7 @@ public class Worker : BackgroundService
                     WorkerId = $"worker-{Environment.MachineName}",
                     TaskId = Guid.NewGuid().ToString(),
                     Timestamp = DateTime.UtcNow.ToString("O"),
-                    Counter = _tokenCount++
+                    Counter = Interlocked.Increment(ref _tokenCount) - 1
                 };
 
                 _logger.LogInformation("Generating JWT token #{Counter} for task {TaskId}...", 
