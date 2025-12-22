@@ -420,6 +420,61 @@ public class JwtServiceTests
 }
 ```
 
+### Testing with TimeProvider for Deterministic Time
+
+```csharp
+using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Extensions.Options;
+using Microsoft.Extensions.Time.Testing;
+using System.IdentityModel.Tokens.Jwt;
+using Xunit;
+
+public class JwtServiceTimeTests
+{
+    [Fact]
+    public void GenerateToken_WithFakeTimeProvider_UsesProvidedTime()
+    {
+        // Arrange: Set up a fake time provider at a specific time
+        var fakeTimeProvider = new FakeTimeProvider();
+        var fixedTime = new DateTimeOffset(2024, 1, 15, 10, 30, 0, TimeSpan.Zero);
+        fakeTimeProvider.SetUtcNow(fixedTime);
+
+        var options = Options.Create(new MiniJwtOptions
+        {
+            SecretKey = "test-secret-key-at-least-32-bytes-long",
+            Issuer = "TestApp",
+            Audience = "TestClient",
+            ExpirationMinutes = 60
+        });
+
+        // Create service with fake time provider
+        var service = new MiniJwtService(
+            Options.CreateMonitor(options),
+            NullLogger<MiniJwtService>.Instance,
+            new JwtSecurityTokenHandler { MapInboundClaims = false },
+            fakeTimeProvider
+        );
+
+        // Act: Generate a token
+        var token = service.GenerateToken(new { sub = "test-user" });
+
+        // Assert: Verify the token uses the fake time
+        var handler = new JwtSecurityTokenHandler();
+        var jwtToken = handler.ReadJwtToken(token);
+        
+        Assert.Equal(fixedTime.UtcDateTime, jwtToken.ValidFrom);
+        Assert.Equal(fixedTime.AddMinutes(60).UtcDateTime, jwtToken.ValidTo);
+
+        // Advance time and generate another token
+        fakeTimeProvider.Advance(TimeSpan.FromMinutes(10));
+        var token2 = service.GenerateToken(new { sub = "test-user2" });
+        
+        var jwtToken2 = handler.ReadJwtToken(token2);
+        Assert.Equal(fixedTime.AddMinutes(10).UtcDateTime, jwtToken2.ValidFrom);
+    }
+}
+```
+
 ## Runnable Sample Applications
 
 We provide complete, runnable sample applications in the repository:
