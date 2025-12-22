@@ -163,7 +163,31 @@ var options = Options.Create(new MiniJwtOptions
     ExpirationMinutes = 60
 });
 
-var svc = new MiniJwtService(options, NullLogger<MiniJwtService>.Instance);
+var svc = new MiniJwtService(options, NullLogger<MiniJwtService>.Instance, new JwtSecurityTokenHandler());
+```
+
+### Testing with TimeProvider
+
+For testable time-dependent behavior, the library supports `TimeProvider` (built-in for .NET 8+ or via `Microsoft.Bcl.TimeProvider` for earlier versions). You can inject a `FakeTimeProvider` for deterministic testing:
+
+```csharp
+using Microsoft.Extensions.Time.Testing;
+
+var fakeTimeProvider = new FakeTimeProvider();
+fakeTimeProvider.SetUtcNow(new DateTimeOffset(2024, 1, 15, 10, 0, 0, TimeSpan.Zero));
+
+var svc = new MiniJwtService(
+    options, 
+    NullLogger<MiniJwtService>.Instance, 
+    new JwtSecurityTokenHandler(),
+    fakeTimeProvider
+);
+
+// Generate token at the fixed time
+var token = svc.GenerateToken(user);
+
+// Advance time for further testing
+fakeTimeProvider.Advance(TimeSpan.FromMinutes(5));
 ```
 
 ## Debugging tips
