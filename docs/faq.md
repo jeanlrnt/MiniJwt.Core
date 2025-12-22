@@ -304,6 +304,9 @@ See the [examples documentation](examples.md#unit-testing) for unit testing patt
 - Create test instances with `NullLogger<MiniJwtService>.Instance`
 - Use `Options.Create()` for test configurations
 - Mock `IMiniJwtService` in your tests for isolation
+- Use `FakeTimeProvider` from `Microsoft.Extensions.TimeProvider.Testing` for deterministic time-dependent testing
+
+For time-dependent testing, inject a `FakeTimeProvider` into the service constructor to control token generation timestamps. See [Testing with TimeProvider](examples.md#testing-with-timeprovider-for-deterministic-time) for examples.
 
 ## Troubleshooting
 

@@ -15,6 +15,7 @@ public class MiniJwtService : IMiniJwtService, IDisposable
 {
     private readonly ILogger _logger;
     private readonly JwtSecurityTokenHandler _tokenHandler;
+    private readonly TimeProvider _timeProvider;
     private readonly IDisposable? _optionsChangeRegistration;
     private readonly object _sync = new object();
 
@@ -26,9 +27,15 @@ public class MiniJwtService : IMiniJwtService, IDisposable
     private const int MinimumKeyLengthBytes = 32; // 256 bits for HS256
 
     public MiniJwtService(IOptionsMonitor<MiniJwtOptions> optionsMonitor, ILogger<MiniJwtService> logger, JwtSecurityTokenHandler tokenHandler)
+        : this(optionsMonitor, logger, tokenHandler, TimeProvider.System)
+    {
+    }
+
+    public MiniJwtService(IOptionsMonitor<MiniJwtOptions> optionsMonitor, ILogger<MiniJwtService> logger, JwtSecurityTokenHandler tokenHandler, TimeProvider timeProvider)
     {
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         _tokenHandler = tokenHandler ?? throw new ArgumentNullException(nameof(tokenHandler));
+        _timeProvider = timeProvider ?? throw new ArgumentNullException(nameof(timeProvider));
         _options = optionsMonitor.CurrentValue ?? throw new ArgumentNullException(nameof(optionsMonitor));
         
         RefreshFromOptions(_options);
@@ -109,7 +116,7 @@ public class MiniJwtService : IMiniJwtService, IDisposable
 
         claims.Add(new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()));
 
-        var now = DateTime.UtcNow;
+        var now = _timeProvider.GetUtcNow().UtcDateTime;
         var expires = now.AddMinutes(currentOptions.ExpirationMinutes);
 
         var jwt = new JwtSecurityToken(

@@ -2,6 +2,7 @@
 using System.Linq;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Microsoft.Extensions.Time.Testing;
 using MiniJwt.Core.Attributes;
 using MiniJwt.Core.Models;
 using MiniJwt.Core.Services;
@@ -284,5 +285,98 @@ public partial class MiniJwtTests
 
         // Assert
         Assert.True(trackableDisposable.IsDisposed, "The options change subscription should be disposed when the service is disposed");
+    }
+
+    [Fact]
+    public void GenerateToken_WithFakeTimeProvider_ShouldUseProvidedTime()
+    {
+        // Arrange
+        var fakeTimeProvider = new FakeTimeProvider();
+        var fixedTime = new DateTimeOffset(2024, 1, 15, 10, 30, 0, TimeSpan.Zero);
+        fakeTimeProvider.SetUtcNow(fixedTime);
+
+        var options = new SimpleOptionsMonitor<MiniJwtOptions>(new MiniJwtOptions
+        {
+            SecretKey = "IntegrationTestSecretKey_LongEnough_For_HS256_0123456789",
+            Issuer = "MiniJwt.Tests",
+            Audience = "MiniJwt.Tests.Client",
+            ExpirationMinutes = 60
+        });
+
+        using var loggerFactory = new LoggerFactory();
+        var service = new MiniJwtService(
+            options,
+            loggerFactory.CreateLogger<MiniJwtService>(),
+            new System.IdentityModel.Tokens.Jwt.JwtSecurityTokenHandler(),
+            fakeTimeProvider
+        );
+
+        var user = new TestUser { Id = 1, Email = "test@test.com", Name = "User Test" };
+
+        // Act
+        var token = service.GenerateToken(user);
+
+        // Assert
+        Assert.NotNull(token);
+        
+        // Decode the token to verify it uses the fake time
+        var handler = new System.IdentityModel.Tokens.Jwt.JwtSecurityTokenHandler();
+        var jwtToken = handler.ReadJwtToken(token);
+        
+        // The token's NotBefore should match the fixed time
+        Assert.Equal(fixedTime.UtcDateTime, jwtToken.ValidFrom);
+        
+        // The token's expiration should be 60 minutes after the fixed time
+        var expectedExpiry = fixedTime.AddMinutes(60).UtcDateTime;
+        Assert.Equal(expectedExpiry, jwtToken.ValidTo);
+    }
+
+    [Fact]
+    public void GenerateToken_WithAdvancedTime_UsesUpdatedTime()
+    {
+        // Arrange
+        var fakeTimeProvider = new FakeTimeProvider();
+        var initialTime = new DateTimeOffset(2024, 1, 15, 10, 0, 0, TimeSpan.Zero);
+        fakeTimeProvider.SetUtcNow(initialTime);
+
+        var options = new SimpleOptionsMonitor<MiniJwtOptions>(new MiniJwtOptions
+        {
+            SecretKey = "IntegrationTestSecretKey_LongEnough_For_HS256_0123456789",
+            Issuer = "MiniJwt.Tests",
+            Audience = "MiniJwt.Tests.Client",
+            ExpirationMinutes = 10 // 10 minutes
+        });
+
+        using var loggerFactory = new LoggerFactory();
+        var service = new MiniJwtService(
+            options,
+            loggerFactory.CreateLogger<MiniJwtService>(),
+            new System.IdentityModel.Tokens.Jwt.JwtSecurityTokenHandler(),
+            fakeTimeProvider
+        );
+
+        var user = new TestUser { Id = 1, Email = "test@test.com", Name = "User Test" };
+
+        // Generate token at initial time
+        var token = service.GenerateToken(user);
+        Assert.NotNull(token);
+
+        // Verify the token was generated with the fake time
+        var handler = new System.IdentityModel.Tokens.Jwt.JwtSecurityTokenHandler();
+        var jwtToken = handler.ReadJwtToken(token);
+        Assert.Equal(initialTime.UtcDateTime, jwtToken.ValidFrom);
+        Assert.Equal(initialTime.AddMinutes(10).UtcDateTime, jwtToken.ValidTo);
+
+        // Advance the fake time by 5 minutes
+        fakeTimeProvider.Advance(TimeSpan.FromMinutes(5));
+
+        // Generate another token - it should use the new advanced time
+        var token2 = service.GenerateToken(user);
+        Assert.NotNull(token2);
+        
+        var jwtToken2 = handler.ReadJwtToken(token2);
+        var expectedTime = initialTime.AddMinutes(5).UtcDateTime;
+        Assert.Equal(expectedTime, jwtToken2.ValidFrom);
+        Assert.Equal(expectedTime.AddMinutes(10), jwtToken2.ValidTo);
     }
 }

@@ -22,6 +22,11 @@
     <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="7.3.1" />
   </ItemGroup>
 
+  <!-- TimeProvider is built-in for .NET 8+, but needs a package for earlier versions -->
+  <ItemGroup Condition="'$(TargetFramework)' == 'net6.0' OR '$(TargetFramework)' == 'net7.0'">
+    <PackageReference Include="Microsoft.Bcl.TimeProvider" Version="8.0.1" />
+  </ItemGroup>
+
   <ItemGroup>
     <None Include="..\..\README.md" Pack="true" PackagePath="\"/>
   </ItemGroup>
