@@ -8,6 +8,7 @@ using System.Text;
 using System.Globalization;
 using Microsoft.Extensions.Logging;
 using MiniJwt.Core.Models;
+using System.Collections.Concurrent;
 
 namespace MiniJwt.Core.Services;
 
@@ -25,6 +26,21 @@ public class MiniJwtService : IMiniJwtService, IDisposable
     private MiniJwtOptions _options;
 
     private const int MinimumKeyLengthBytes = 32; // 256 bits for HS256
+
+    // Reflection cache: stores property metadata for each type to avoid repeated reflection operations
+    private static readonly ConcurrentDictionary<Type, PropertyClaimInfo[]> _reflectionCache = new();
+
+    private sealed class PropertyClaimInfo
+    {
+        public PropertyInfo Property { get; }
+        public string ClaimType { get; }
+
+        public PropertyClaimInfo(PropertyInfo property, string claimType)
+        {
+            Property = property;
+            ClaimType = claimType;
+        }
+    }
 
     public MiniJwtService(IOptionsMonitor<MiniJwtOptions> optionsMonitor, ILogger<MiniJwtService> logger, JwtSecurityTokenHandler tokenHandler)
         : this(optionsMonitor, logger, tokenHandler, TimeProvider.System)
@@ -85,6 +101,26 @@ public class MiniJwtService : IMiniJwtService, IDisposable
         };
     }
 
+    private static PropertyClaimInfo[] GetOrComputePropertyClaimInfos(Type type)
+    {
+        return _reflectionCache.GetOrAdd(type, t =>
+        {
+            var props = t.GetProperties(BindingFlags.Instance | BindingFlags.Public);
+            var claimInfos = new List<PropertyClaimInfo>(props.Length);
+
+            foreach (var prop in props)
+            {
+                var attr = prop.GetCustomAttribute<MiniJwtClaimAttribute>();
+                if (attr is not null)
+                {
+                    claimInfos.Add(new PropertyClaimInfo(prop, attr.ClaimType));
+                }
+            }
+
+            return claimInfos.ToArray();
+        });
+    }
+
     /// <inheritdoc/>
     public string? GenerateToken<T>(T payload)
     {
@@ -102,16 +138,14 @@ public class MiniJwtService : IMiniJwtService, IDisposable
             return null;
         }
         
-        var props = typeof(T).GetProperties(BindingFlags.Instance | BindingFlags.Public);
-        var claims = new List<Claim>(props.Length + 1);
+        var propertyClaimInfos = GetOrComputePropertyClaimInfos(typeof(T));
+        var claims = new List<Claim>(propertyClaimInfos.Length + 1);
         
-        foreach (var prop in props)
+        foreach (var info in propertyClaimInfos)
         {
-            var attr = prop.GetCustomAttribute<MiniJwtClaimAttribute>();
-            if (attr is null) continue;
-            var raw = prop.GetValue(payload);
+            var raw = info.Property.GetValue(payload);
             if (raw is null) continue;
-            claims.Add(new Claim(attr.ClaimType, raw.ToString() ?? string.Empty));
+            claims.Add(new Claim(info.ClaimType, raw.ToString() ?? string.Empty));
         }
 
         claims.Add(new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()));
@@ -191,15 +225,13 @@ public class MiniJwtService : IMiniJwtService, IDisposable
         if (principal == null) return default;
 
         var result = new T();
-        var props = typeof(T).GetProperties(BindingFlags.Instance | BindingFlags.Public);
+        var propertyClaimInfos = GetOrComputePropertyClaimInfos(typeof(T));
 
-        foreach (var prop in props)
+        foreach (var info in propertyClaimInfos)
         {
-            var attr = prop.GetCustomAttribute<MiniJwtClaimAttribute>();
-            if (attr == null) continue;
-            var claim = principal.Claims.FirstOrDefault(c => c.Type == attr.ClaimType);
+            var claim = principal.Claims.FirstOrDefault(c => c.Type == info.ClaimType);
             if (claim == null) continue;
-            TrySetProperty(result, prop, claim.Value);
+            TrySetProperty(result, info.Property, claim.Value);
         }
 
         return result;
