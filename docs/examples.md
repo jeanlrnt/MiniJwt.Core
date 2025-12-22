@@ -431,6 +431,19 @@ using Xunit;
 
 public class JwtServiceTimeTests
 {
+    // Simple test helper for IOptionsMonitor
+    private class SimpleOptionsMonitor<T>(T value) : IOptionsMonitor<T>
+    {
+        public T CurrentValue => value;
+        public T Get(string? name) => value;
+        public IDisposable OnChange(Action<T, string> listener) => new NoOpDisposable();
+    }
+
+    private class NoOpDisposable : IDisposable
+    {
+        public void Dispose() { }
+    }
+
     [Fact]
     public void GenerateToken_WithFakeTimeProvider_UsesProvidedTime()
     {
@@ -439,7 +452,7 @@ public class JwtServiceTimeTests
         var fixedTime = new DateTimeOffset(2024, 1, 15, 10, 30, 0, TimeSpan.Zero);
         fakeTimeProvider.SetUtcNow(fixedTime);
 
-        var options = Options.Create(new MiniJwtOptions
+        var options = new SimpleOptionsMonitor<MiniJwtOptions>(new MiniJwtOptions
         {
             SecretKey = "test-secret-key-at-least-32-bytes-long",
             Issuer = "TestApp",
@@ -449,7 +462,7 @@ public class JwtServiceTimeTests
 
         // Create service with fake time provider
         var service = new MiniJwtService(
-            Options.CreateMonitor(options),
+            options,
             NullLogger<MiniJwtService>.Instance,
             new JwtSecurityTokenHandler { MapInboundClaims = false },
             fakeTimeProvider
