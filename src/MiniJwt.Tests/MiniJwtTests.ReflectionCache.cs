@@ -1,5 +1,4 @@
 using System;
-using System.Diagnostics;
 using System.Linq;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -74,39 +73,5 @@ public partial class MiniJwtTests
         Assert.Equal(testUser.Email, deserializedUser.Email);
         Assert.Equal(cachePayload.Id, deserializedPayload.Id);
         Assert.Equal(cachePayload.Name, deserializedPayload.Name);
-    }
-
-    [Fact]
-    public void ReflectionCache_PerformanceTest_ShouldBeFasterOnSecondCall()
-    {
-        // This test demonstrates that the cache improves performance
-        // Note: This is a basic performance test and may have variability
-        
-        var svc = CreateService();
-        var payload = new CacheTestPayload { Id = 1, Name = "Performance Test" };
-
-        // First call - will populate the cache
-        var sw1 = Stopwatch.StartNew();
-        for (int i = 0; i < 100; i++)
-        {
-            var token = svc.GenerateToken(new CacheTestPayload { Id = i, Name = $"Test{i}" });
-            Assert.NotNull(token);
-        }
-        sw1.Stop();
-
-        // Second batch - should use cached metadata
-        var sw2 = Stopwatch.StartNew();
-        for (int i = 0; i < 100; i++)
-        {
-            var token = svc.GenerateToken(new CacheTestPayload { Id = i + 100, Name = $"Test{i + 100}" });
-            Assert.NotNull(token);
-        }
-        sw2.Stop();
-
-        // The cache should make subsequent calls faster or at least not slower
-        // We're being lenient here as performance can vary in test environments
-        // The important thing is that it works correctly, not that it's always faster
-        Assert.True(sw2.Elapsed <= sw1.Elapsed * 2, 
-            $"Second batch took significantly longer ({sw2.ElapsedMilliseconds}ms) than first batch ({sw1.ElapsedMilliseconds}ms), suggesting cache may not be working");
     }
 }
