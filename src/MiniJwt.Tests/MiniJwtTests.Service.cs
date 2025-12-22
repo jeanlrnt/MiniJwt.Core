@@ -332,7 +332,7 @@ public partial class MiniJwtTests
     }
 
     [Fact]
-    public void ValidateToken_WithFakeTimeProvider_TokenGenerationUsesProvidedTime()
+    public void GenerateToken_WithAdvancedTime_UsesUpdatedTime()
     {
         // Arrange
         var fakeTimeProvider = new FakeTimeProvider();
