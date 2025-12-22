@@ -4,7 +4,7 @@
     <TargetFrameworks>net6.0;net7.0;net8.0;net9.0;net10.0</TargetFrameworks>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <PackageId>MiniJwt.Core</PackageId>
-    <Version>1.1.1</Version>
+    <Version>1.2.0</Version>
     <Authors>jeanlrnt</Authors>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
@@ -12,6 +12,7 @@
     <PackageTags>jwt;auth;security;minimal-api</PackageTags>
     <RepositoryUrl>https://github.com/jeanlrnt/MiniJwt.Core</RepositoryUrl>
     <PackageReadmeFile>README.md</PackageReadmeFile>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
   </PropertyGroup>
 
   <ItemGroup>
@@ -19,6 +20,11 @@
     <PackageReference Include="Microsoft.Extensions.Logging" Version="8.0.0" />
     <PackageReference Include="Microsoft.Extensions.Options" Version="8.0.0" />
     <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="7.3.1" />
+  </ItemGroup>
+
+  <!-- TimeProvider is built-in for .NET 8+, but needs a package for earlier versions -->
+  <ItemGroup Condition="'$(TargetFramework)' == 'net6.0' OR '$(TargetFramework)' == 'net7.0'">
+    <PackageReference Include="Microsoft.Bcl.TimeProvider" Version="8.0.1" />
   </ItemGroup>
 
   <ItemGroup>

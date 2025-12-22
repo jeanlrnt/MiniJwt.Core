@@ -37,3 +37,9 @@ jobs:
           name: test-results-${{ matrix.os }}-${{ matrix.dotnet-version }}
           path: src/MiniJwt.Tests/TestResults/*.trx
 
+      - name: Build samples
+        run: |
+          dotnet build samples/ConsoleMinimal/ConsoleMinimal.csproj -c Release
+          dotnet build samples/ASPNetCoreAuth/ASPNetCoreAuth.csproj -c Release
+          dotnet build samples/WorkerService/WorkerService.csproj -c Release
+
