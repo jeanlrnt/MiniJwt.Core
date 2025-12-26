@@ -141,4 +141,26 @@ public partial class MiniJwtTests
         // Ensure that the logger is functional
         logger.LogInformation("Logger is working in MiniJwtService test.");
     }
+    
+    [Fact]
+    public void ServiceCollectionExtensions_AddMiniJwt_DoesNotRegisterJwtSecurityTokenHandlerGlobally()
+    {
+        // Arrange
+        var services = new ServiceCollection();
+        services.AddMiniJwt(BasicOptions);
+        
+        // Act
+        var serviceProvider = services.BuildServiceProvider();
+        
+        // Assert - JwtSecurityTokenHandler should NOT be resolvable from the DI container
+        var handler = serviceProvider.GetService<System.IdentityModel.Tokens.Jwt.JwtSecurityTokenHandler>();
+        Assert.Null(handler);
+        
+        // But IMiniJwtService should be available and functional
+        var miniJwtService = serviceProvider.GetService<IMiniJwtService>();
+        Assert.NotNull(miniJwtService);
+        
+        var token = miniJwtService.GenerateToken(new { });
+        Assert.NotNull(token);
+    }
 }
