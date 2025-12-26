@@ -63,20 +63,24 @@ dotnet add package MiniJwt.Core
 ### 2) Register in DI (e.g. `Program.cs` for an ASP.NET Core app)
 
 ```csharp
-using Microsoft.Extensions.DependencyInjection;
-using MiniJwt.Core.Models;
-using MiniJwt.Core.Services;
+using MiniJwt.Core.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.Configure<MiniJwtOptions>(builder.Configuration.GetSection("MiniJwt"));
-// The service depends on IOptions<MiniJwtOptions> and ILogger<MiniJwtService>
-builder.Services.AddSingleton<IMiniJwtService, MiniJwtService>();
+// Register MiniJwt with configuration from appsettings.json
+builder.Services.AddMiniJwt(options =>
+{
+    var config = builder.Configuration.GetSection("MiniJwt");
+    options.SecretKey = config["SecretKey"];
+    options.Issuer = config["Issuer"];
+    options.Audience = config["Audience"];
+    options.ExpirationMinutes = double.Parse(config["ExpirationMinutes"] ?? "60");
+});
 
 var app = builder.Build();
 ```
 
-Note: `ILogger<MiniJwtService>` is provided automatically by the framework DI. You can choose `AddSingleton`, `AddScoped` or `AddTransient` depending on your needs; the service is stateless after construction and computes the key bytes in the constructor, so `Singleton` is often suitable.
+Note: The `AddMiniJwt` extension method registers `IMiniJwtService` as a singleton with all required dependencies, including a private `JwtSecurityTokenHandler` instance that won't conflict with other JWT libraries in your application.
 
 ### 3) Define a model with claims
 
@@ -149,11 +153,35 @@ else
 
 ## Unit test examples
 
-If you create a service instance manually in a test, provide an `ILogger<MiniJwtService>`. Example using `NullLogger`:
+If you create a service instance manually in a test, you have two options:
+
+### Option 1: Use AddMiniJwt (Recommended)
+
+```csharp
+using Microsoft.Extensions.DependencyInjection;
+using MiniJwt.Core.Extensions;
+
+var services = new ServiceCollection();
+services.AddMiniJwt(options =>
+{
+    options.SecretKey = "IntegrationTestSecretKey_LongEnough_For_HS256_0123456789";
+    options.Issuer = "MiniJwt.Tests";
+    options.Audience = "MiniJwt.Tests.Client";
+    options.ExpirationMinutes = 60;
+});
+
+var serviceProvider = services.BuildServiceProvider();
+var svc = serviceProvider.GetRequiredService<IMiniJwtService>();
+```
+
+### Option 2: Manual Instantiation
+
+For direct instantiation without DI, provide all dependencies explicitly:
 
 ```csharp
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
+using System.IdentityModel.Tokens.Jwt;
 
 var options = Options.Create(new MiniJwtOptions
 {
@@ -163,7 +191,14 @@ var options = Options.Create(new MiniJwtOptions
     ExpirationMinutes = 60
 });
 
-var svc = new MiniJwtService(options, NullLogger<MiniJwtService>.Instance, new JwtSecurityTokenHandler());
+var optionsMonitor = Options.CreateMonitor(options);
+var tokenHandler = new JwtSecurityTokenHandler { MapInboundClaims = false };
+
+var svc = new MiniJwtService(
+    optionsMonitor, 
+    NullLogger<MiniJwtService>.Instance,
+    tokenHandler
+);
 ```
 
 ### Testing with TimeProvider
@@ -172,14 +207,24 @@ For testable time-dependent behavior, the library supports `TimeProvider` (built
 
 ```csharp
 using Microsoft.Extensions.Time.Testing;
+using Microsoft.Extensions.Options;
+using System.IdentityModel.Tokens.Jwt;
 
 var fakeTimeProvider = new FakeTimeProvider();
 fakeTimeProvider.SetUtcNow(new DateTimeOffset(2024, 1, 15, 10, 0, 0, TimeSpan.Zero));
 
+var options = Options.Create(new MiniJwtOptions
+{
+    SecretKey = "IntegrationTestSecretKey_LongEnough_For_HS256_0123456789",
+    Issuer = "MiniJwt.Tests",
+    Audience = "MiniJwt.Tests.Client",
+    ExpirationMinutes = 60
+});
+
 var svc = new MiniJwtService(
-    options, 
+    Options.CreateMonitor(options),
     NullLogger<MiniJwtService>.Instance, 
-    new JwtSecurityTokenHandler(),
+    new JwtSecurityTokenHandler { MapInboundClaims = false },
     fakeTimeProvider
 );
 

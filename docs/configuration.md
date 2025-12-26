@@ -108,6 +108,8 @@ options.ExpirationMinutes = 0.5;       // 30 seconds
 
 **Program.cs:**
 ```csharp
+using MiniJwt.Core.Extensions;
+
 builder.Services.AddMiniJwt(options =>
 {
     var config = builder.Configuration.GetSection("MiniJwt");
@@ -121,18 +123,19 @@ builder.Services.AddMiniJwt(options =>
 ### 2. Using IConfiguration Binding
 
 ```csharp
-builder.Services.Configure<MiniJwtOptions>(
-    builder.Configuration.GetSection("MiniJwt"));
+using MiniJwt.Core.Extensions;
 
-builder.Services.AddMiniJwt(options => 
+builder.Services.AddMiniJwt(options =>
 {
-    // Options are bound from configuration automatically
+    builder.Configuration.GetSection("MiniJwt").Bind(options);
 });
 ```
 
 ### 3. Direct Configuration
 
 ```csharp
+using MiniJwt.Core.Extensions;
+
 builder.Services.AddMiniJwt(options =>
 {
     options.SecretKey = "my-secret-key-at-least-32-bytes-long";
@@ -170,6 +173,8 @@ builder.Services.AddMiniJwt(options =>
 
 **Program.cs (loading secret from environment):**
 ```csharp
+using MiniJwt.Core.Extensions;
+
 builder.Services.AddMiniJwt(options =>
 {
     var config = builder.Configuration.GetSection("MiniJwt");
@@ -188,18 +193,26 @@ builder.Services.AddMiniJwt(options =>
 For applications serving multiple tenants with different JWT configurations:
 
 ```csharp
+using MiniJwt.Core.Models;
+using MiniJwt.Core.Services;
+using Microsoft.Extensions.Options;
+using System.IdentityModel.Tokens.Jwt;
+
 public class TenantJwtService
 {
     private readonly Dictionary<string, IMiniJwtService> _services = new();
+    private readonly IServiceProvider _serviceProvider;
 
     public TenantJwtService(IServiceProvider serviceProvider)
     {
+        _serviceProvider = serviceProvider;
+        
         // Register services for each tenant
-        _services["tenant1"] = CreateServiceForTenant("tenant1", serviceProvider);
-        _services["tenant2"] = CreateServiceForTenant("tenant2", serviceProvider);
+        _services["tenant1"] = CreateServiceForTenant("tenant1");
+        _services["tenant2"] = CreateServiceForTenant("tenant2");
     }
 
-    private IMiniJwtService CreateServiceForTenant(string tenantId, IServiceProvider sp)
+    private IMiniJwtService CreateServiceForTenant(string tenantId)
     {
         var options = new MiniJwtOptions
         {
@@ -209,11 +222,18 @@ public class TenantJwtService
             ExpirationMinutes = 60
         };
 
-        return new MiniJwtService(
-            Options.CreateMonitor(Options.Create(options)),
-            sp.GetRequiredService<ILogger<MiniJwtService>>(),
-            new JwtSecurityTokenHandler { MapInboundClaims = false }
-        );
+        var optionsMonitor = Options.CreateMonitor(Options.Create(options));
+        var logger = _serviceProvider.GetRequiredService<ILogger<MiniJwtService>>();
+        var tokenHandler = new JwtSecurityTokenHandler { MapInboundClaims = false };
+
+        return new MiniJwtService(optionsMonitor, logger, tokenHandler);
+    }
+
+    private string GetSecretForTenant(string tenantId)
+    {
+        // Implement your logic to retrieve tenant-specific secrets
+        // This could be from a database, configuration, or secrets manager
+        return $"secret-for-{tenantId}-at-least-32-bytes-long";
     }
 
     public IMiniJwtService GetServiceForTenant(string tenantId)
