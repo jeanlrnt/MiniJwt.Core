@@ -200,6 +200,48 @@ public record LoginRequest(string Username, string Password);
 
 See [samples/ConsoleMinimal](../samples/ConsoleMinimal/) for a complete runnable example.
 
+### Using Dependency Injection (Recommended)
+
+```csharp
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using MiniJwt.Core.Extensions;
+using MiniJwt.Core.Services;
+
+var host = Host.CreateDefaultBuilder(args)
+    .ConfigureServices((context, services) =>
+    {
+        services.AddMiniJwt(options =>
+        {
+            options.SecretKey = "super-secret-key-at-least-32-bytes-long-hs256";
+            options.Issuer = "ConsoleApp";
+            options.Audience = "ConsoleClient";
+            options.ExpirationMinutes = 1;
+        });
+    })
+    .Build();
+
+var jwtService = host.Services.GetRequiredService<IMiniJwtService>();
+
+// Generate token
+var token = jwtService.GenerateToken(new { sub = "user1", role = "admin" });
+Console.WriteLine($"Token: {token}");
+
+// Validate immediately
+var principal = jwtService.ValidateToken(token);
+Console.WriteLine($"Valid: {principal?.Identity?.Name ?? "null"}");
+
+// Wait for expiration
+Console.WriteLine("Waiting for token to expire...");
+await Task.Delay(TimeSpan.FromSeconds(65));
+
+// Validate expired token
+var expiredPrincipal = jwtService.ValidateToken(token);
+Console.WriteLine($"After expiration: {(expiredPrincipal == null ? "Invalid" : "Valid")}");
+```
+
+### Manual Instantiation (Without DI)
+
 ```csharp
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
@@ -373,13 +415,35 @@ app.UseMiddleware<JwtValidationMiddleware>();
 ### Unit Testing
 
 ```csharp
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
+using MiniJwt.Core.Extensions;
+using MiniJwt.Core.Models;
+using MiniJwt.Core.Services;
+using System.IdentityModel.Tokens.Jwt;
 using Xunit;
 
 public class JwtServiceTests
 {
-    private IMiniJwtService CreateService()
+    // Option 1: Using AddMiniJwt (Recommended)
+    private IMiniJwtService CreateServiceWithDI()
+    {
+        var services = new ServiceCollection();
+        services.AddMiniJwt(options =>
+        {
+            options.SecretKey = "test-secret-key-at-least-32-bytes-long";
+            options.Issuer = "TestApp";
+            options.Audience = "TestClient";
+            options.ExpirationMinutes = 60;
+        });
+
+        var serviceProvider = services.BuildServiceProvider();
+        return serviceProvider.GetRequiredService<IMiniJwtService>();
+    }
+
+    // Option 2: Manual instantiation
+    private IMiniJwtService CreateServiceManually()
     {
         var options = Options.Create(new MiniJwtOptions
         {
@@ -399,7 +463,7 @@ public class JwtServiceTests
     [Fact]
     public void GenerateToken_ValidPayload_ReturnsToken()
     {
-        var service = CreateService();
+        var service = CreateServiceWithDI();
         var token = service.GenerateToken(new { sub = "test" });
         
         Assert.NotNull(token);
@@ -409,7 +473,7 @@ public class JwtServiceTests
     [Fact]
     public void ValidateToken_ValidToken_ReturnsPrincipal()
     {
-        var service = CreateService();
+        var service = CreateServiceWithDI();
         var token = service.GenerateToken(new { sub = "test123" });
         
         var principal = service.ValidateToken(token);

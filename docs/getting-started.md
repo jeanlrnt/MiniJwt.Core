@@ -161,7 +161,45 @@ return Ok(user);
 
 ## Console Application Example
 
-For a minimal console application without dependency injection:
+For a minimal console application:
+
+### Using Dependency Injection (Recommended)
+
+```csharp
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using MiniJwt.Core.Extensions;
+using MiniJwt.Core.Services;
+
+var host = Host.CreateDefaultBuilder(args)
+    .ConfigureServices((context, services) =>
+    {
+        services.AddMiniJwt(options =>
+        {
+            options.SecretKey = "my-super-secret-key-at-least-32-bytes-long-hs256";
+            options.Issuer = "MyConsoleApp";
+            options.Audience = "MyConsoleClient";
+            options.ExpirationMinutes = 60;
+        });
+    })
+    .Build();
+
+var jwtService = host.Services.GetRequiredService<IMiniJwtService>();
+
+// Generate token
+var payload = new { sub = "user1", role = "admin" };
+var token = jwtService.GenerateToken(payload);
+Console.WriteLine($"Generated Token: {token}");
+
+// Validate token
+var principal = jwtService.ValidateToken(token);
+if (principal != null)
+{
+    Console.WriteLine($"Token is valid! Subject: {principal.FindFirst("sub")?.Value}");
+}
+```
+
+### Manual Instantiation (Without DI)
 
 ```csharp
 using Microsoft.Extensions.Logging.Abstractions;
@@ -179,7 +217,7 @@ var options = new MiniJwtOptions
 };
 
 // Create IOptionsMonitor for console usage
-var optionsMonitor = Microsoft.Extensions.Options.Options.CreateMonitor(options);
+var optionsMonitor = Options.CreateMonitor(Options.Create(options));
 
 var tokenHandler = new JwtSecurityTokenHandler { MapInboundClaims = false };
 var jwtService = new MiniJwtService(
